@@ -204,7 +204,7 @@ PW.ceasefires.forEach(e => events.push({ d: dnum(e.start), cls: 'repair', t: `Ce
 PW.grid_damage.forEach(e => events.push({ d: dnum(e.date), cls: 'strike', t: e.label, s: e.line, zones: e.zones || [] }));
 events.sort((a, b) => a.d - b.d);
 function buildTimeline() {
-  const svg = $('#timeline svg'); TW = Math.max(600, $('#timeline').clientWidth); svg.setAttribute('viewBox', `0 0 ${TW} 118`); let h = '';
+  const svg = $('#timeline svg'); TW = Math.max(600, $('#timeline svg').clientWidth); svg.setAttribute('viewBox', `0 0 ${TW} 132`); let h = '';
   for (let y = 2022; y <= 2026; y++) { const x = tx(dnum(`${y}-01-01`)); if (x > 150) h += `<line x1="${x}" x2="${x}" y1="8" y2="112" stroke="rgba(255,255,255,.12)"/>`; h += `<text x="${Math.max(x, 150) + 4}" y="14" fill="#9aa5a0" font-size="9">${y}</text>`; }
   const lane = (y, label, col) => h += `<text x="0" y="${y + 4}" fill="${col}" font-size="9">${label}</text><line x1="150" x2="${TW - 20}" y1="${y}" y2="${y}" stroke="${col}" stroke-opacity=".35" stroke-width="5"/>`;
   lane(32, '750 kV DNIPROVSKA', '#ff4d3a'); lane(52, '330 kV FEROSPLAVNA-1', '#ffb648');
@@ -214,7 +214,7 @@ function buildTimeline() {
   PW.loops.forEach(e => { const x = tx(dnum(e.start)); h += `<line x1="${x}" x2="${x}" y1="64" y2="82" stroke="#ff2d55" stroke-width="1.6"/>`; });
   PW.ceasefires.forEach(e => { const x = tx(dnum(e.start)); h += `<path d="M${x - 4} 102 L${x} 92 L${x + 4} 102Z" fill="#9dfcc4"/>`; });
   PW.context.forEach(e => { const x = tx(dnum(e.date)); h += `<line x1="${x}" x2="${x}" y1="20" y2="112" stroke="#5cc8ff" stroke-dasharray="2 2"/><text x="${x + 4}" y="112" fill="#5cc8ff" font-size="8">${e.label.toUpperCase()}</text>`; });
-  h += `<text x="0" y="112" fill="#5d6763" font-size="7.5">Gap = no line outage dated · ${PW.gaps[0].split('.')[0]}</text>`;
+  h += `<text x="0" y="128" fill="#5d6763" font-size="8">Gap = no line outage dated · ${PW.gaps[0].split('.')[0]}</text>`;
   h += `<g id="ph"><line x1="0" x2="0" y1="6" y2="112" stroke="#fff" stroke-width="1.2"/><circle cx="0" cy="6" r="3" fill="#fff"/></g>`;
   svg.innerHTML = h;
 }
@@ -258,33 +258,166 @@ const dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,
 let dashStep = -1;
 
 /* ---------- HUD ---------- */
+const N = ST.scenes.length, NCH = ST.scenes.filter(s => s.chapter).length;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pad2 = n => String(n).padStart(2, '0');
+const fmtS = s => { s = Math.floor(s + 0.01); return `${Math.floor(s / 60)}:${pad2(s % 60)}`; };
+const navName = sc => sc.titleCard ? 'Introduction' : sc.endCard ? 'Closing' : sc.name;
+const isRec = () => document.body.classList.contains('rec');
+const CREDITS = 'IAEA updates via World Nuclear Association · UCDP GED · OpenStreetMap · Sentinel-2 cloudless (EOX) · Esri World Imagery · NASA Black Marble · AWS Terrain Tiles';
+
 let stampCache = '';
-function setStamp(v, sub = '') { const k = v + '|' + sub; if (k === stampCache) return; stampCache = k; $('#stamp .v').textContent = v; $('#stamp .sub').textContent = sub; }
-let capOn = !qs.has('nocap'), presenter = false, plantAlarm = 0;
+function setStamp(v, sub = '') {
+  const k = v + '|' + sub; if (k === stampCache) return; stampCache = k;
+  const el = $('#dateline'); if (!el) return;
+  el.classList.toggle('none', !v); el.querySelector('.v').textContent = v; el.querySelector('.s').textContent = sub;
+}
+let capOn = !qs.has('nocap'), auto = false, plantAlarm = 0;
+
+/* ---------- legend (built from the layers each slide turns on) ---------- */
+const sw = {
+  line: (c, w = 2, st = 'solid', glow) => `<i style="display:block;width:22px;border-top:${w}px ${st} ${c};${glow ? `box-shadow:0 0 6px ${c}` : ''}"></i>`,
+  fill: (bg, bd = '1px solid transparent') => `<i style="display:block;width:20px;height:11px;border-radius:2px;background:${bg};border:${bd}"></i>`,
+  dot: (c, r = 8, ring) => `<i style="display:block;width:${r}px;height:${r}px;border-radius:50%;${ring ? `border:1.5px solid ${c}` : `background:${c};box-shadow:0 0 6px ${c}`}"></i>`,
+  kv: () => `<i style="display:grid;gap:2px;width:22px"><b style="border-top:2.4px solid #ff4d3a"></b><b style="border-top:1.8px solid #ffb648"></b><b style="border-top:1px solid #e7d27c"></b></i>`,
+};
+const has = fc => fc && fc.features && fc.features.length > 0;
+const LEGEND = [
+  ['plant', sw.dot('#fff', 11, true), 'Zaporizhzhia NPP'],
+  ['znpp', sw.line('#ff6a55', 3, 'solid', 1), 'ZNPP line · 750 kV Dniprovska'],
+  ['znpp', sw.line('#ffc56a', 3, 'solid', 1), 'ZNPP line · 330 kV Ferosplavna-1'],
+  ['particles', sw.dot('#ffd1c8', 6), 'Direction of power flow'],
+  ['grid', sw.kv(), 'Grid · 750 / 330 / 150 kV'],
+  ['zones', sw.fill('rgba(255,45,85,.4)', '1px solid #ff2d55'), 'Damage zone (approximate)'],
+  ['frontline', sw.fill('rgba(255,45,85,.14)', '1px dashed rgba(255,255,255,.8)'), 'Frontline along the river (schematic)'],
+  ['reservoir', sw.fill('rgba(92,200,255,.4)'), 'Kakhovka reservoir, May 2023'],
+  ['proposed', sw.line('#fff', 2, 'dashed'), 'Link to Russian grid (schematic)'],
+  ['ucdp', sw.fill('linear-gradient(#ff0f4f,#ff9a7a)'), 'UCDP fatal events · height = count'],
+  ['trenches', sw.line('#ffdf6b', 1.5), 'Trench lines', () => has(X.trenches)],
+  ['artillery', sw.dot('#ffdf6b', 7), 'Artillery positions', () => has(X.artillery)],
+  ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights · NASA Black Marble 2016'],
+];
+let legcam = null;
+function buildLegend(sc) {
+  const rows = LEGEND.filter(([k, , , ok]) => (sc.layers[k] || 0) >= 0.3 && (!ok || ok()));
+  $('#legend').innerHTML = (rows.length ? `<div class="h">LEGEND</div>` + rows.map(([, s, l]) => `<div class="row"><span class="sw">${s}</span>${esc(l)}</div>`).join('') : '') + `<div class="cam" id="legcam"></div>`;
+  legcam = $('#legcam');
+}
+
+/* ---------- story panel ---------- */
+function slideHTML(sc, dir) {
+  const cls = `slide${dir < 0 ? ' back' : ''}`;
+  const date = `<div id="dateline" class="dateline none"><div class="v"></div><div class="s"></div></div>`;
+  const src = sc.sources ? `<div class="src"><b>SOURCES</b>${esc(sc.sources)}</div>` : '';
+  if (sc.titleCard) return `<div class="${cls} cover">
+    <div class="kicker">A narrated map <span>· ${NCH} chapters</span></div>
+    <h1>${esc(ST.title)}</h1><div class="rule"></div>
+    <p class="st">The militarization of energy infrastructure · Zaporizhzhia NPP</p>
+    <p class="cr">GSAPP · Advanced V Studio · Fall 2026</p>
+    <div class="hint"><kbd>←</kbd><kbd>→</kbd> move through the story <span style="color:var(--faint)">·</span> <kbd>Space</kbd> pause</div>${src}</div>`;
+  if (sc.endCard) return `<div class="${cls}">
+    <div class="kicker">Closing</div>
+    <h2>Slow violence · energy · water · territory</h2>${date}
+    <p class="lede">${esc(sc.vo)}</p>
+    <div class="sec"><div class="h">Sources</div><ul class="keys credits">${CREDITS.split(' · ').map(s => `<li class="on" style="cursor:default"><span class="n">—</span><div><small style="color:var(--ink2);margin:0">${esc(s)}</small></div></li>`).join('')}</ul></div>
+    <button class="restart" id="bRestart">↺&nbsp; Start again</button></div>`;
+  const keys = (sc.callouts || []).length ? `<div class="sec"><div class="h">On the map</div><ol class="keys" id="keys">${sc.callouts.map((c, i) =>
+    `<li data-i="${i}" tabindex="0"><span class="n">${pad2(i + 1)}</span><div><b>${esc(c.title)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div></li>`).join('')}</ol></div>` : '';
+  return `<div class="${cls}">
+    <div class="kicker">Chapter ${esc(sc.chapter)} <span>/ ${pad2(NCH)}</span></div>
+    <h2>${esc(sc.name)}</h2>${date}
+    <p class="lede">${esc(sc.vo)}</p>${keys}${src}</div>`;
+}
+let keyEls = [];
+function renderPanel(sc, dir) {
+  const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
+  keyEls = [...pb.querySelectorAll('#keys li')];
+  keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i]; const jump = () => seekLocal(c.t + 0.05, true);
+    li.onclick = jump; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); jump(); } }; });
+  const r = $('#bRestart'); if (r) r.onclick = () => go(0);
+  $('#pg').textContent = `${cur + 1} / ${N}`;
+  $('#bBack').disabled = cur === 0; $('#bNext').disabled = cur === N - 1;
+  $('#bNext span').textContent = cur === 0 ? 'Begin' : 'Next';
+  [...$('#menu').querySelectorAll('a')].forEach((a, i) => { a.classList.toggle('cur', i === cur); if (i === cur) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
+}
+function updateKeys(sc, tl) {
+  keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i], on = tl >= c.t && tl < c.t + c.d;
+    if (on && !li.classList.contains('on') && playing) { // keep the newest point in view in long lists
+      const pb = $('#pbody'), r = li.getBoundingClientRect(), b = pb.getBoundingClientRect();
+      if (r.bottom > b.bottom || r.top < b.top) pb.scrollTo({ top: pb.scrollTop + r.bottom - b.bottom + 12, behavior: 'smooth' }); }
+    li.classList.toggle('on', on); li.classList.toggle('seen', tl >= c.t + c.d); });
+}
+function buildMenu() {
+  $('#menu').innerHTML = `<div class="mh">SLIDES</div>` + ST.scenes.map((sc, i) =>
+    `<a href="#${sc.id}" data-i="${i}"><span class="n">${sc.chapter || (i === 0 ? '00' : '—')}</span>${esc(navName(sc))}<span class="d">${fmtS(sc.dur)}</span></a>`).join('') +
+    `<div class="keyhelp"><kbd>←</kbd> <kbd>→</kbd> previous / next slide<br><kbd>Space</kbd> pause · continue when a slide has finished<br><kbd>A</kbd> autoplay through all slides · <kbd>M</kbd> this menu<br><kbd>F</kbd> fullscreen · <kbd>R</kbd> record mode (hides the panel)</div>`;
+  $('#menu').querySelectorAll('a').forEach(a => a.onclick = e => { e.preventDefault(); go(+a.dataset.i); });
+}
+function toggleMenu(v) {
+  const on = v ?? !$('#menu').classList.contains('on');
+  $('#menu').classList.toggle('on', on); $('#bMenu').classList.toggle('on', on); $('#bMenu').setAttribute('aria-expanded', on);
+  if (on) { const a = $('#menu a.cur'); a && a.scrollIntoView({ block: 'nearest' }); }
+}
+
+/* ---------- map padding: frame the story in the space beside the panel ---------- */
+function updatePadding() {
+  const p = { top: 0, bottom: 0, left: 0, right: 0 };
+  if (!isRec()) {
+    const r = $('#panel').getBoundingClientRect();
+    if (innerWidth <= 760) p.bottom = Math.round(innerHeight - r.top); else p.left = Math.round(r.right);
+  }
+  map.setPadding(p);
+}
+
+/* ---------- camera blend: every jump eases from wherever the camera is ---------- */
+let blend = null;
+function startBlend() { const c = map.getCenter(); blend = { from: { c: [c.lng, c.lat], z: map.getZoom(), p: map.getPitch(), b: map.getBearing() }, t0: performance.now(), arc: null, dur: 0 }; }
+function mixPose(a, b, u, arc) {
+  const zl = lerp(a.z, b.z, u);
+  const w0 = Math.pow(2, -a.z), w1 = Math.pow(2, -b.z), w = Math.pow(2, -zl);
+  const s = Math.abs(w1 - w0) < 1e-9 ? u : (w - w0) / (w1 - w0);
+  const db = ((b.b - a.b) % 360 + 540) % 360 - 180;
+  return { c: [unX(lerp(mercX(a.c[0]), mercX(b.c[0]), s)), unY(lerp(mercY(a.c[1]), mercY(b.c[1]), s))], z: zl - arc * Math.sin(Math.PI * u), p: lerp(a.p, b.p, u), b: a.b + db * u };
+}
+function blended(c) {
+  if (!blend) return c;
+  if (blend.arc == null) { // size the move once: far jumps pull back a little (fly-to), near ones just glide
+    const a = blend.from, d = Math.hypot(mercX(c.c[0]) - mercX(a.c[0]), mercY(c.c[1]) - mercY(a.c[1])) * 512 * Math.pow(2, Math.min(a.z, c.z));
+    blend.arc = clamp(Math.log2(1 + d / innerWidth) * 1.1, 0, 3);
+    blend.dur = 1300 + 450 * blend.arc + 70 * Math.abs(c.z - a.z) + 4 * Math.abs(((c.b - a.b) % 360 + 540) % 360 - 180);
+  }
+  const u = clamp((performance.now() - blend.t0) / blend.dur, 0, 1);
+  if (u >= 1) { blend = null; return c; }
+  return mixPose(blend.from, c, ease.io(u), blend.arc);
+}
 
 /* ---------- scene management ---------- */
-let cur = -1, T = 0, playing = false, lastNow = null, tweenFast = false;
+let cur = -1, T = 0, playing = false, lastNow = null, first = true, dir = 1, held = false;
 function sceneAt(t) { for (let i = ST.scenes.length - 1; i >= 0; i--) if (t >= ST.scenes[i].start) return i; return 0; }
 function enter(i, snap) {
   const sc = ST.scenes[i]; cur = i; logShown = -1; stampCache = '';
+  if (snap) blend = null;
   Object.keys(L).forEach(k => { L[k].tgt = (sc.layers && sc.layers[k]) || 0; if (snap) { L[k].cur = L[k].tgt; L[k].set(L[k].cur); } });
   lineState = { 'Dniprovska 750 kV': 1, 'Ferosplavna-1 330 kV': 1 };
   D.zones.features.forEach(f => map.setFeatureState({ source: 'zones', id: f.properties.id }, { f: 0 }));
   $('#loss').classList.remove('on');
   buildCallouts(sc);
-  $('#chap .n').textContent = sc.chapter ? `CHAPTER ${sc.chapter}` : ''; $('#chap .t').textContent = sc.chapter ? sc.name : '';
-  $('#chap').style.opacity = sc.chapter ? 1 : 0;
+  renderPanel(sc, dir);
+  buildLegend(sc);
   $('#card .n').textContent = sc.chapter; $('#card .t').textContent = sc.name;
-  $('#src').textContent = sc.sources || '';
   setStamp(sc.stamp || '', sc.stamp ? 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E' : '');
   $('#cap').textContent = sc.vo || '';
   $('#counter').style.opacity = 0; $('#ucdpCount').style.opacity = 0;
+  $('#counter').style.display = sc.id === 'dependency' ? '' : 'none';
+  $('#ucdpCount').style.display = sc.id === 'frontier' ? '' : 'none';
+  $('#log').style.display = sc.layers.log ? '' : 'none';
+  if (location.hash.slice(1) !== sc.id) history.replaceState(null, '', location.pathname + location.search + '#' + sc.id);
 }
 function render(dt) {
   const i = sceneAt(T);
-  if (i !== cur) enter(i, !(playing && i === cur + 1));
+  if (i !== cur) { enter(i, first); first = false; }
   const sc = ST.scenes[i], tl = T - sc.start;
-  const c = cam(sc, tl);
+  const c = blended(cam(sc, tl));
   // vertical exaggeration eases with altitude: dramatic when wide, near-true in close-ups
   const ex = Math.round(lerp(ST.exaggeration, ST.exaggerationClose, clamp((c.z - 8.5) / 4.5, 0, 1)) * 10) / 10;
   if (map.terrain && map.terrain.exaggeration !== ex) { map.terrain.exaggeration = ex; }
@@ -294,14 +427,14 @@ function render(dt) {
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
   if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force('lights', lerp(sc.dim.from, sc.dim.to, u)); }
   if (sc.id === 'repair') updateRepair(sc, tl);
-  if (sc.id === 'dependency') { const n = Math.round(27 * ease.out(clamp((tl - 3) / 7, 0, 1))); $('#counter .v').textContent = n; $('#counter').style.opacity = clamp((tl - 2) / 1.5, 0, 1) * clamp((sc.dur - tl) / 1.5, 0, 1); }
+  if (sc.id === 'dependency') { const n = Math.round(27 * ease.out(clamp((tl - 3) / 7, 0, 1))); $('#counter .v').textContent = n; $('#counter').style.opacity = clamp((tl - 2) / 1.5, 0, 1); }
   if (sc.id === 'frontier') {
     const n = sc.dm.at(tl);
     map.setFilter('ucdp', ['<=', ['get', 'n'], n]); map.setFilter('ucdp-glow', ['<=', ['get', 'n'], n]);
     map.setPaintProperty('ucdp-glow', 'circle-opacity', ['*', L.ucdp.cur * 0.7, ['max', 0.12, ['-', 1, ['/', ['-', n, ['get', 'n']], 60]]]]);
     let cnt = 0;
     stacks.forEach(s => { let k = 0; while (k < s.ns.length && s.ns[k] <= n) k++; cnt += k; if (k !== s.shown) { s.shown = k; map.setFeatureState({ source: 'stacks', id: s.id }, { k }); } });
-    $('#ucdpCount .v').textContent = cnt; $('#ucdpCount').style.opacity = clamp((tl - 4) / 1.5, 0, 1) * clamp((sc.dur - tl) / 1.5, 0, 1);
+    $('#ucdpCount .v').textContent = cnt; $('#ucdpCount').style.opacity = clamp((tl - 4) / 1.5, 0, 1);
     setStamp(fmtD(n), 'UCDP GED · FATAL EVENTS, PRECISE LOCATION');
   } else if (L.ucdp.cur < 0.01) { map.setPaintProperty('ucdp-glow', 'circle-opacity', 0); }
 
@@ -321,75 +454,117 @@ function render(dt) {
   map.setPaintProperty('plant-dot', 'circle-color', plantAlarm || sc.id === 'winter' || sc.id === 'dependency' ? '#ff2d55' : '#ffffff');
   if (sc.id !== 'repair') plantAlarm = 0;
 
-  updateCallouts(tl);
-  // cards
+  updateCallouts(tl); updateKeys(sc, tl);
+  // record-mode overlays (hidden by CSS otherwise)
   const chapterCard = sc.chapter && tl > 0.6 && tl < 5.2;
   $('#card').classList.toggle('on', !!chapterCard);
-  $('#chap').style.opacity = sc.chapter && !chapterCard ? 1 : 0;
   const tOn = (sc.titleCard && tl > 3 && tl < 21) || (sc.endCard && tl > (sc.capUntil || 13));
-  $('#title .cr').textContent = sc.endCard ? 'Sources · IAEA updates via World Nuclear Association · UCDP GED · OpenStreetMap · Sentinel-2 cloudless (EOX) · Esri World Imagery · NASA Black Marble · AWS Terrain Tiles' : 'GSAPP · Advanced V Studio · Fall 2026';
-  $('#dimmer').style.opacity = sc.endCard && tl > (sc.capUntil || 13) ? 0.45 : 0;
+  $('#title .cr').textContent = sc.endCard ? 'Sources · ' + CREDITS : 'GSAPP · Advanced V Studio · Fall 2026';
+  $('#dimmer').style.opacity = isRec() && sc.endCard && tl > (sc.capUntil || 13) ? 0.45 : 0;
   $('#title').classList.toggle('on', !!tOn);
   $('#title .st').textContent = sc.endCard ? 'Slow violence · energy · water · territory' : 'The militarization of energy infrastructure · Zaporizhzhia NPP';
   document.body.classList.toggle('tl', L.timeline.cur > 0.5);
   $('#cap').classList.toggle('on', capOn && !!sc.vo && tl > 1.5 && tl < (sc.capUntil || sc.dur - 0.4) && !chapterCard);
-  $('#stamp').style.opacity = $('#stamp .v').textContent ? 1 : 0;
   $('#readout').innerHTML = `${c.c[1].toFixed(4)}°N  ${c.c[0].toFixed(4)}°E<br>ALT Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · HDG ${(((c.b % 360) + 360) % 360).toFixed(0).padStart(3, '0')}°<br>TERRAIN ×${ex} VERTICAL`;
-  // controls
-  $('#clock').textContent = `${fmtT(T)} / ${fmtT(TOTAL)}`;
-  $('#scrub .fill').style.width = (T / TOTAL * 100) + '%';
+  if (legcam) legcam.textContent = `${c.c[1].toFixed(4)}°N ${c.c[0].toFixed(4)}°E · Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · TERRAIN ×${ex}`;
+  // slide progress
+  const u = clamp(tl / sc.dur, 0, 1);
+  $('#clock').textContent = `${fmtS(tl)} / ${fmtS(sc.dur)}`;
+  $('#scrub .fill').style.width = (u * 100) + '%'; $('#scrub .knob').style.left = (u * 100) + '%';
+  $('#bNext').classList.toggle('ready', held && cur < N - 1);
 }
-function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; o.cur = v; o.set(v); }
+// scene-driven values (imagery crossfade, dimming) snap during normal playback, but ease in while the camera is blending
+function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!blend) { o.cur = v; o.set(v); } }
 
 function loop(now) {
   const dt = lastNow == null ? 0 : Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
   if (playing) {
     const prev = T; T += dt;
-    if (presenter) { const sc = ST.scenes[sceneAt(prev)], end = sc.start + sc.dur; if (prev < end && T >= end && sceneAt(prev) < ST.scenes.length - 1) { T = end - 0.001; setPlay(false); } }
-    if (T >= TOTAL) { T = TOTAL - 0.001; setPlay(false); }
+    const si = sceneAt(prev), end = ST.scenes[si].start + ST.scenes[si].dur;
+    if (prev < end && T >= end && (!auto || si === N - 1)) { T = end - 0.001; held = true; setPlay(false); }
+    else if (T >= end) dir = 1;
   }
   render(dt);
   requestAnimationFrame(loop);
 }
 
-/* ---------- controls ---------- */
-function setPlay(v) { playing = v; $('#bPlay').textContent = v ? '❚❚ PAUSE' : '▶ PLAY'; }
-function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; }
-function chapter(d) { const i = clamp(sceneAt(T) + d, 0, ST.scenes.length - 1); seek(ST.scenes[i].start + 0.001); }
-function buildScrub() {
-  const s = $('#scrub');
-  ST.scenes.forEach(sc => { const t = document.createElement('div'); t.className = 'tick'; t.style.left = (sc.start / TOTAL * 100) + '%'; t.innerHTML = `<span>${sc.chapter || ''} ${sc.chapter ? sc.name.split(' ')[0] : ''}</span>`; s.appendChild(t); });
-  const go = e => { const r = s.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); };
-  let drag = false; s.addEventListener('mousedown', e => { drag = true; go(e); }); addEventListener('mousemove', e => drag && go(e)); addEventListener('mouseup', () => drag = false);
+/* ---------- navigation ---------- */
+const ICON = {
+  play: '<svg viewBox="0 0 12 12"><path d="M3 1.5v9l7.5-4.5z"/></svg>',
+  pause: '<svg viewBox="0 0 12 12"><path d="M2.5 1.5H5v9H2.5zM7 1.5h2.5v9H7z"/></svg>',
+  replay: '<svg viewBox="0 0 12 12"><path d="M6 2a4 4 0 1 1-3.8 2.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M.8 1.6l.4 4 3.6-1.8z"/></svg>',
+};
+function setPlay(v) {
+  playing = v; if (v) held = false;
+  const k = v ? 'pause' : held ? 'replay' : 'play';
+  $('#bPlay').innerHTML = ICON[k]; $('#bPlay').setAttribute('aria-label', k === 'replay' ? 'Replay this slide' : k === 'pause' ? 'Pause' : 'Play');
 }
-const toggleRec = () => document.body.classList.toggle('rec');
-$('#bPlay').onclick = () => { if (T >= TOTAL - 0.01) seek(0); setPlay(!playing); };
-$('#bCap').onclick = () => { capOn = !capOn; $('#bCap').classList.toggle('act', capOn); };
-$('#bPres').onclick = () => { presenter = !presenter; $('#bPres').classList.toggle('act', presenter); };
-$('#bRec').onclick = toggleRec;
-$('#bHelp').onclick = () => $('#help').classList.toggle('on');
+function go(i) {
+  i = clamp(i, 0, N - 1); toggleMenu(false);
+  if (i === cur) return;
+  dir = i > cur ? 1 : -1;
+  startBlend();
+  T = ST.scenes[i].start + 0.001; setPlay(true);
+}
+const next = () => go(cur + 1), back = () => go(cur - 1);
+function seekLocal(t, play) { // within the current slide
+  const sc = ST.scenes[cur]; if (!sc) return;
+  if (Math.abs(T - (sc.start + t)) > 1.5) startBlend();
+  T = sc.start + clamp(t, 0.001, sc.dur - 0.001); logShown = -1; held = false;
+  if (play) setPlay(true); else setPlay(playing);
+}
+function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; first = true; } // hard cut (URL ?t= and test hook)
+function togglePlay() { if (held) seekLocal(0, true); else setPlay(!playing); }
+function setAuto(v) { auto = v; $('#bAuto').classList.toggle('act', auto); if (auto && held && cur < N - 1) next(); }
+function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); updatePadding(); }
+
+$('#bPlay').onclick = togglePlay;
+$('#bBack').onclick = back; $('#bNext').onclick = next;
+$('#bMenu').onclick = () => toggleMenu();
+$('#bAuto').onclick = () => setAuto(!auto);
+(() => { // per-slide scrubber
+  const s = $('#scrub'); let drag = false;
+  const at = e => { const r = s.getBoundingClientRect(), sc = ST.scenes[cur]; if (sc) seekLocal(clamp((e.clientX - r.left) / r.width, 0, 1) * sc.dur); };
+  s.addEventListener('pointerdown', e => { drag = true; s.setPointerCapture(e.pointerId); at(e); });
+  s.addEventListener('pointermove', e => drag && at(e));
+  s.addEventListener('pointerup', () => drag = false);
+})();
 addEventListener('keydown', e => {
-  if (e.code === 'Space') { e.preventDefault(); $('#bPlay').click(); }
-  else if (e.key === 'ArrowRight') chapter(1); else if (e.key === 'ArrowLeft') chapter(T - ST.scenes[sceneAt(T)].start < 2 ? -1 : 0);
-  else if (e.key === 'Home' || e.key === '0') seek(0);
-  else if (e.key === 'c' || e.key === 'C') $('#bCap').click(); else if (e.key === 'p' || e.key === 'P') $('#bPres').click();
-  else if (e.key === 'r' || e.key === 'R') toggleRec(); else if (e.key === '?') $('#bHelp').click();
-  else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const onBtn = e.target.closest && e.target.closest('button,a,li[tabindex]');
+  if (onBtn && (e.key === 'Enter' || e.key === ' ')) return; // let focused controls activate normally
+  switch (e.key) {
+    case ' ': e.preventDefault(); held && cur < N - 1 ? next() : togglePlay(); break;
+    case 'ArrowRight': case 'PageDown': e.preventDefault(); next(); break;
+    case 'ArrowLeft': case 'PageUp': e.preventDefault(); back(); break;
+    case 'Home': go(0); break;
+    case 'End': go(N - 1); break;
+    case 'Escape': toggleMenu(false); break;
+    case 'm': case 'M': toggleMenu(); break;
+    case 'a': case 'A': setAuto(!auto); break;
+    case 'c': case 'C': capOn = !capOn; break;
+    case 'r': case 'R': toggleRec(); break;
+    case 'f': case 'F': document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); break;
+  }
 });
-let idleT; addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2500); });
-if (!capOn) $('#bCap').classList.remove('act');
-if (qs.has('rec')) document.body.classList.add('rec');
+addEventListener('hashchange', () => { const i = ST.scenes.findIndex(s => s.id === location.hash.slice(1)); if (i >= 0) go(i); });
+if (qs.has('rec')) { document.body.classList.add('rec'); setAuto(true); }
+buildMenu(); setPlay(false);
 
 map.on('load', () => {
-  buildLayers(); buildTimeline(); buildScrub(); addEventListener('resize', buildTimeline);
+  buildLayers(); buildTimeline(); updatePadding();
+  addEventListener('resize', () => { buildTimeline(); updatePadding(); });
   $('#attrib').innerHTML = Object.values(map.getStyle().sources).map(s => s.attribution).filter(Boolean).join(' · ');
+  const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
+  if (hi >= 0) seek(ST.scenes[hi].start + 0.001);
   if (qs.has('t')) seek(+qs.get('t'));
   if (qs.has('scene')) { const s = ST.scenes.find(s => s.id === qs.get('scene')); if (s) seek(s.start + 0.001); }
   const ld = $('#loading'); if (ld) ld.style.opacity = 0; setTimeout(() => $('#loading')?.remove(), 1000);
+  if (!qs.has('paused')) setPlay(true);
   requestAnimationFrame(loop);
 });
 // test hook: render a given time without playing
-window.__film = { seek: t => { seek(t); }, get T() { return T; }, TOTAL, play: () => setPlay(true),
+window.__film = { seek: t => { seek(t); }, go, get T() { return T; }, TOTAL, play: () => setPlay(true),
   step: (dt = 0.05) => { render(dt); map.redraw(); },
   // render frames leading up to t (for headless checks while the tab is in the background)
   shot: async (t, n = 40) => { seek(t - 2); const l = $('#loading'); if (l) l.remove();

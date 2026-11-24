@@ -9,20 +9,27 @@ python3 -m http.server 8765
 ```
 Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F** for fullscreen.
 
-| Key | Action |
+The site is a guided walkthrough: a glass story panel on the left, one slide per chapter. Each slide plays its camera move and data animation, then holds until you continue. Moving forwards, backwards, or jumping from the slide list always glides the camera from where it is, so there are no hard cuts.
+
+| Control | Action |
 |---|---|
-| Space | play / pause |
-| ← → | previous / next chapter |
-| Home | restart |
-| C | captions (your narration on screen) |
-| P | presenter mode: holds at the end of each chapter until you press → or Space |
-| R | record mode: hides the control bar |
-| URL | `?t=95` start at 95 s · `?scene=repair` · `?rec=1` · `?nocap=1` |
+| **Next ›** / → / PageDown | next slide (Space also continues once a slide has finished) |
+| **‹ Back** / ← / PageUp | previous slide |
+| **≡ 3 / 10** / M | slide list; click any slide to jump to it |
+| Space | pause / play the current slide · replay it once it has finished |
+| Scrubber in the panel | scrub within the current slide |
+| "On the map" items | click to jump to that moment in the slide |
+| A / **AUTO** | autoplay: run straight on into the next slide (the old continuous film) |
+| R | record mode: hides the panel and legend, shows the original cinematic captions, chapter cards and title, autoplay on |
+| C | captions on/off (record mode) |
+| F | fullscreen |
+| Home / End | first / last slide |
+| URL | `#repair` opens that slide (the address updates as you go) · `?t=95` start at 95 s · `?scene=repair` · `?rec=1` · `?nocap=1` · `?paused` |
 
 ## Recording
 1. **Do a warm-up run first.** Play the whole film once, or scrub through every chapter. The satellite and terrain tiles come from the internet, and on a first pass they load in visibly. The second pass plays from the browser cache.
 2. Record with OBS or QuickTime (screen + mic), using `?rec=1`.
-   - **Voice live over picture:** use presenter mode (P) and advance after each paragraph.
+   - **Voice live over picture:** in record mode press A to turn autoplay off; each chapter then holds at its end until you press →.
    - **Voice-over recorded separately:** play straight through, then lay the audio over it in Premiere.
 3. Captions can stay on as subtitles. Turn them off (C) if you'd rather read from this sheet.
 
