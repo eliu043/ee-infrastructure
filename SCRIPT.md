@@ -1,4 +1,4 @@
-# POWERLINES — 7:00 film script
+# POWERLINES — 7:00 film script (v2)
 
 A narrated web film. Camera, callouts and data animations are all driven by one clock, so every take is identical. Edit `story.js` to change timing, camera or text. `film.js` is the engine.
 
@@ -26,41 +26,44 @@ Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F
    - **Voice-over recorded separately:** play straight through, then lay the audio over it in Premiere.
 3. Captions can stay on as subtitles. Turn them off (C) if you'd rather read from this sheet.
 
-## Timing and narration
-Your narration runs about 2½ minutes at a measured pace. The other ~4½ minutes are deliberate pauses for the camera moves and data animations. Each chapter's narration is timed to start ~1.5 s in, after the chapter card.
+## Timing and narration (v2 — cold open, water, roads)
+Narration is about 3 minutes at a measured pace. Each chapter's caption appears after its chapter card (~5 s in).
 
 | Time | Chapter | Narration (yours, verbatim) | What's on screen |
 |---|---|---|---|
-| 0:00 | Title | *(silence / ambient)* | Pre-war Ukraine at night (Black Marble 2016), slow descent, POWERLINES title |
-| 0:25 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Flight down to the plant. High-voltage grid pulses outward, particles flow out along both ZNPP lines. Callouts: ZNPP, Enerhodar heat, thermal plant switchyard |
-| 1:10 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Pull back. The reservoir becomes the frontline zone (red tint, dashed edge). Nikopol and Marhanets on the right bank |
-| 1:50 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Cold shutdown, cooling pond, labor. Imagery crossfades 2021 → 2024 as the Kakhovka reservoir drains. Glide downstream to the destroyed dam |
-| 2:40 | 04 Not so soon | Eventually Russia wants to connect ZNPP to the national grid, but not so soon. | Dashed arrow toward the Russian grid, labelled schematic |
-| 3:00 | 05 Shelling and repair | In the meantime, Russia's shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force. | **The core sequence.** Date counter runs Mar 2022 → Nov 2026. Lines go dark during each outage, damage zones Z1–Z10 flash, and complete-loss banners (#9 … #27) appear. Event log and outage timeline at the bottom. The camera visits Z7 (1.5 km), Z6 (span over the Dnipro), Z1 (north bank) and Z2 (switchyard) |
-| 4:30 | 06 Sovereignty becomes dependency | Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns. | Close orbit of the reactors. Particles now flow **into** the plant. Counter climbs to 27. Diesel callouts |
-| 5:05 | 07 Frontier | Trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | UCDP fatal events accumulate as 3D columns per location, rising highest at Nikopol. Trenches/artillery appear here once digitized (see below) |
-| 5:50 | 08 Winter | As winter approaches, more cities across Ukraine are bracing for long dark months while ZNPP remains suspended between occupation, disrepair, and the threat of nuclear catastrophe. | Zoom out to all of Ukraine. City lights dim. ZNPP is left as a red beacon |
-| 6:25 | Close | POWERLINES traces the slow violence of war through the militarization of energy infrastructure. By following the disruption of electricity, water, and territory, it examines how the occupation of critical infrastructure contests sovereignty, reorganizes material dependencies, and drains the resources needed to sustain everyday life. | Return orbit over ZNPP, narration as caption until 6:47, then the title and source credits |
+| 0:00 | Cold open · Frontier | Trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | Hook: UCDP fatal events rise as 3D columns from Feb 2022 to Nov 2026, tallest at Nikopol. Date and event counter running |
+| 0:40 | Title | *(silence)* | Camera rises to pre-war night lights. POWERLINES |
+| 0:55 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Grid pulses outward. Particles flow out along both ZNPP lines |
+| 1:27 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Reservoir becomes the frontline zone. Nikopol and Marhanets on the right bank |
+| 1:55 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Close-up: three callouts, Energy / Water / Labor |
+| 2:21 | 04 Water | Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plant's canals depleted. | Pond, wide reservoir, dam. Imagery steps 2021 → 2023 → 2024 → 2025 as the reservoir drains and the pond's banks emerge. OSM outlines of the pond, spray ponds and thermal plant canals. Wells callout |
+| 3:13 | 05 Not so soon | Eventually Russia wants to connect ZNPP to the national grid, but not so soon. | Schematic arrow toward the Russian grid |
+| 3:29 | 06 Shelling and repair | In the meantime, Russia's shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force. | Outage timeline 2022 → 2026. Lines go dark, damage zones flash, loss banners and event log. Camera visits Z7, Z6, Z1 and Z2 |
+| 4:41 | 07 Sovereignty becomes dependency | Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns. During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators. | Close orbit. Particles flow **into** the plant. Counter climbs to **8** (note: 27 by Nov 2026). Diesel callout |
+| 5:19 | 08 Roads | *(narration to write; suggested draft below)* | Regional major roads, then shortest routes with moving dots. Diesel/supply routes in amber, Ukrainian crews in green, Russian crews in red |
+| 6:04 | 09 Winter | As winter approaches, more cities across Ukraine are bracing for long dark months while ZNPP remains suspended between occupation, disrepair, and the threat of nuclear catastrophe. | Zoom out to Ukraine, lights dim, ZNPP beacon |
+| 6:32 | End | *(silence; the v1 closing paragraph can be pasted back in `story.js`)* | Final orbit, title, source credits |
 
-*Typo fixed in the caption: "Power Plan" → "Power Plant".*
+### Roads: findings and a draft line
+From `research/logistics/` (OSM roads, 24 Nov 2026; shortest road distance, not observed convoys):
+- **Melitopol → ZNPP:** 126 km by road. The last 30 km run within 20 km of the river front.
+- **Crimea (Chonhar) → ZNPP:** 229 km.
+- **Ukrainian crews:** reach the north-bank breaks within 3–4 km of Nikopol (Z1) and Marhanets (Z10), but those breaks lie on the frontline, so repairs wait for IAEA-brokered ceasefires.
+- **Dnipro → Dniprovska substation:** 102 km. The substation was struck in May and November 2026.
+- **No major road links the two banks** in the study area, so each side repairs only its own breaks.
+
+*Draft:* "Every blackout is a supply problem. Diesel for the reserve generators travels some 126 km by road from Melitopol, its last stretch within range of the front, while Ukrainian crews wait for ceasefires to reach breaks only a few kilometres from Nikopol."
 
 ## Before presenting: check these
-- **On-screen figures that are not from the research folder** (written from general knowledge; confirm or cut in `story.js`):
+- **On-screen figures not from the research folder** (from general knowledge; confirm or cut in `story.js`):
   - 6 × VVER-1000 / ~6 GW / largest in Europe
-  - "roughly a fifth of national generation"
+  - roughly a fifth of national generation
   - seized 4 March 2022
   - no generation since Sept 2022
-  - 20 emergency diesel generators
-- **Figures from the research folder** (`research/network-scan/znpp-offsite-power.json`, `research/attack-events/`):
-  - outage dates
-  - damage zones
-  - 27 complete losses
-  - 10-day diesel minimum
-  - ceasefire repairs
-  - UCDP events
-- **Chapter 07 vs. the data.** The narration says Ukrainian towns across the river are targeted. The UCDP columns also show events on the occupied left bank (e.g. Enerhodar, Vasylivka), because UCDP records fatal events from both sides. Either keep it as honest context or filter the events in `build_data.py`.
-- **Chapter 08 night-lights dimming** is illustrative (2016 baseline faded), not a measurement. The on-screen source line says so. Your `southern_ukraine_historical_lights_2021_2025.ipynb` could supply real VIIRS change if you run it.
-- **"Roads and labor force" (ch. 05)** has no road layer yet. Adding OSM primary roads would let the repair-crew claim show on the map.
+- **Water:** the pond's refill from the reservoir and the pumping from the thermal plant canals follow your narrative. Your sources should support the wells (IAEA reported them in 2023). Their exact locations aren't in OSM, so the callout says "locations not mapped". The pond/canal change is shown from annual cloud-free composites, not dated scenes.
+- **Blackouts:** "eight times 2022–2024" matches the IAEA count (the 8th complete loss was in 2023; the 9th in July 2025). Our dated chronology only covers some of the early ones.
+- **Cold open:** the UCDP columns also show events on the occupied bank (Enerhodar, Vasylivka), not only "Ukrainian towns across the river".
+- **Winter night-lights dimming** is illustrative, not measured.
 
 ## Adding trenches / artillery (chapter 07)
 Digitize them in QGIS or geojson.io over the Esri/Sentinel imagery. Paste the FeatureCollections into `extra.js`. They draw automatically in chapter 07: trenches as yellow lines, artillery as points. Add a `source` property (imagery + date) to each feature.
