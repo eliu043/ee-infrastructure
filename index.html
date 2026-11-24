@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POWERLINES</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+:root{
+  --ink:#eef1ee; --dim:#9aa5a0; --faint:#5d6763; --bg:#07090a;
+  --k750:#ff4d3a; --k330:#ffb648; --k150:#e7d27c; --water:#5cc8ff; --hit:#ff2d55; --ok:#9dfcc4;
+  --mono:"IBM Plex Mono",ui-monospace,monospace; --sans:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden}
+#map{position:absolute;inset:0}
+.maplibregl-ctrl-attrib{background:rgba(0,0,0,.45)!important;font:10px var(--mono)}
+.maplibregl-ctrl-attrib a,.maplibregl-ctrl-attrib-inner{color:#8a9490!important}
+/* cinematic vignette + letterbox lines */
+#vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,0,.55) 100%),
+             linear-gradient(to bottom,rgba(0,0,0,.55),transparent 16%,transparent 78%,rgba(0,0,0,.7))}
+#dimmer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s}
+.hud{position:absolute;pointer-events:none;transition:opacity .9s}
+/* top-left chapter */
+#chap{top:34px;left:44px}
+#chap .n{font:500 12px var(--mono);letter-spacing:.25em;color:var(--dim)}
+#chap .t{font:600 22px var(--sans);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+#chap .bar{width:36px;height:2px;background:var(--k750);margin-top:10px}
+/* top-right stamp */
+#stamp{top:36px;right:44px;text-align:right;font:500 13px var(--mono);letter-spacing:.2em;color:var(--ink)}
+#stamp .sub{color:var(--dim);font-size:11px;margin-top:6px;letter-spacing:.12em}
+/* bottom-left sources */
+#src{left:44px;bottom:34px;max-width:46vw;font:10.5px/1.5 var(--mono);color:var(--dim);letter-spacing:.03em}
+/* bottom-right readout */
+#readout{right:44px;bottom:34px;text-align:right;font:10.5px/1.6 var(--mono);color:var(--dim)}
+/* captions */
+#cap{left:50%;bottom:86px;transform:translateX(-50%);width:min(980px,76vw);text-align:center;
+  font:400 25px/1.38 var(--sans);text-shadow:0 1px 14px #000,0 0 3px #000;opacity:0}
+#cap.on{opacity:1}
+/* big chapter card */
+#card{left:44px;top:50%;transform:translateY(-50%);opacity:0}
+#card.on{opacity:1}
+#card .n{font:500 15px var(--mono);letter-spacing:.3em;color:var(--k750)}
+#card .t{font:300 64px/1 var(--sans);letter-spacing:.02em;margin-top:10px;max-width:60vw}
+/* title / end cards */
+#title{inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;text-align:center}
+#title.on{opacity:1}
+#title h1{margin:0;font:600 clamp(60px,10vw,150px)/1 var(--sans);letter-spacing:.32em;padding-left:.32em}
+#title .rule{width:min(560px,50vw);height:1px;background:linear-gradient(90deg,transparent,var(--k750),transparent);margin:26px 0}
+#title p{margin:0;font:400 15px var(--mono);letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
+#title p.cr{margin-top:14px;font-size:11px;line-height:1.7;color:var(--faint);max-width:70vw;letter-spacing:.14em}
+/* loss banner */
+#loss{left:50%;top:22%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s}
+#loss.on{opacity:1}
+#loss .k{font:500 12px var(--mono);letter-spacing:.3em;color:var(--hit)}
+#loss .v{font:600 34px var(--sans);letter-spacing:.08em;margin-top:6px;text-shadow:0 0 24px rgba(255,45,85,.6)}
+#loss .s{font:12px/1.5 var(--mono);color:#c3cbc7;margin:8px auto 0;max-width:560px;background:rgba(0,0,0,.55);padding:6px 10px}
+/* counter */
+#counter{right:44px;top:50%;transform:translateY(-50%);text-align:right;opacity:0}
+#counter .v{font:300 130px/0.9 var(--sans);color:var(--hit)}
+#counter .k{font:500 12px/1.6 var(--mono);letter-spacing:.2em;color:var(--dim);max-width:260px;margin-left:auto}
+#ucdpCount{right:44px;top:50%;transform:translateY(-50%);text-align:right;opacity:0}
+#ucdpCount .v{font:300 96px/0.9 var(--sans);color:#ff8a7a}
+#ucdpCount .k{font:500 11px/1.6 var(--mono);letter-spacing:.18em;color:var(--dim);max-width:260px;margin-left:auto}
+/* event log */
+#log{right:44px;top:96px;width:340px;opacity:0;font:11px/1.45 var(--mono)}
+#log .h{letter-spacing:.25em;color:var(--dim);font-size:10px;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:6px;margin-bottom:6px}
+#log .e{padding:6px 0 6px 10px;border-left:2px solid var(--faint);margin-bottom:4px;background:rgba(0,0,0,.35);transition:background .6s}
+#log .e.new{background:rgba(255,45,85,.22)}
+#log .e b{font-weight:500;color:var(--ink)} #log .e span{color:var(--dim)}
+#log .e.loss{border-color:var(--hit)} #log .e.repair{border-color:var(--ok)} #log .e.strike{border-color:var(--k330)} #log .e.line{border-color:var(--k750)} #log .e.ctx{border-color:var(--water)}
+/* timeline */
+#timeline{left:44px;right:44px;bottom:70px;height:118px;opacity:0;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.25));border-top:1px solid rgba(255,255,255,.12)}
+#timeline svg{width:100%;height:100%;display:block;font-family:var(--mono)}
+body.tl #cap{bottom:206px}
+#attrib{position:absolute;left:20px;right:20px;bottom:52px;font:9px var(--mono);color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .4s;z-index:5}
+#attrib a{color:inherit}
+body.rec #attrib,body.idle #attrib{opacity:0}
+/* callouts */
+.co{width:0;height:0;position:relative;pointer-events:none}
+.co .dot{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink);box-shadow:0 0 10px rgba(255,255,255,.5);transform:scale(0);transition:transform .5s cubic-bezier(.2,.9,.3,1.3)}
+.co .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--ink)}
+.co .stem{position:absolute;left:-.5px;bottom:0;width:1px;background:linear-gradient(to top,var(--ink),rgba(255,255,255,.4));height:0;transition:height .7s cubic-bezier(.3,.8,.3,1) .15s}
+.co .lab{position:absolute;white-space:nowrap;opacity:0;transform:translateY(6px);transition:opacity .5s .55s,transform .5s .55s;
+  background:rgba(6,8,9,.72);border-top:1px solid var(--ink);padding:7px 11px 8px;backdrop-filter:blur(3px)}
+.co .lab .i{font:500 10px var(--mono);letter-spacing:.2em;color:var(--k750);margin-right:8px}
+.co .lab b{font:600 15px var(--sans);letter-spacing:.05em;text-transform:uppercase}
+.co .lab small{display:block;font:11px var(--mono);color:#c3cbc7;margin-top:3px}
+.co.c .lab{transform:translate(-50%,6px)} .co.r .lab{left:0} .co.l .lab{right:0}
+.co.on .dot{transform:scale(1)} .co.on .lab{opacity:1;transform:translateY(0)} .co.c.on .lab{transform:translate(-50%,0)}
+.co.ring .dot{border-style:dashed}
+/* controls */
+#ctl{position:absolute;left:0;right:0;bottom:0;height:52px;display:flex;align-items:center;gap:14px;padding:0 20px;
+  background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,0));font:12px var(--mono);color:var(--dim);transition:opacity .4s;z-index:5}
+#ctl button{background:none;border:1px solid rgba(255,255,255,.25);color:var(--ink);font:12px var(--mono);padding:5px 10px;border-radius:2px;cursor:pointer}
+#ctl button.act{border-color:var(--k750);color:var(--k750)}
+#scrub{flex:1;position:relative;height:22px;cursor:pointer}
+#scrub .track{position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(255,255,255,.18)}
+#scrub .fill{position:absolute;left:0;top:10px;height:2px;background:var(--k750)}
+#scrub .tick{position:absolute;top:5px;width:1px;height:12px;background:rgba(255,255,255,.5)}
+#scrub .tick span{position:absolute;top:-15px;left:3px;font-size:9px;white-space:nowrap;color:var(--faint)}
+body.rec #ctl,body.idle #ctl{opacity:0}
+body.idle{cursor:none}
+#help{position:absolute;left:20px;bottom:60px;font:11px/1.7 var(--mono);color:var(--dim);background:rgba(0,0,0,.8);padding:12px 16px;display:none;z-index:6}
+#help.on{display:block}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px var(--mono);letter-spacing:.3em;color:var(--dim);background:var(--bg);z-index:9;transition:opacity 1s}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="vignette"></div>
+<div id="dimmer"></div>
+
+<div id="chap" class="hud"><div class="n"></div><div class="t"></div><div class="bar"></div></div>
+<div id="stamp" class="hud"><div class="v"></div><div class="sub"></div></div>
+<div id="src" class="hud"></div>
+<div id="readout" class="hud"></div>
+<div id="card" class="hud"><div class="n"></div><div class="t"></div></div>
+<div id="title" class="hud"><h1>POWERLINES</h1><div class="rule"></div>
+  <p class="st">The militarization of energy infrastructure · Zaporizhzhia NPP</p>
+  <p class="cr">GSAPP · Advanced V Studio · Fall 2026</p></div>
+<div id="loss" class="hud"><div class="k">COMPLETE LOSS OF OFF-SITE POWER</div><div class="v"></div><div class="s"></div></div>
+<div id="counter" class="hud"><div class="v">0</div><div class="k">COMPLETE LOSSES OF OFF-SITE POWER SINCE 2022 · IAEA</div></div>
+<div id="ucdpCount" class="hud"><div class="v">0</div><div class="k">FATAL EVENTS RECORDED NEAR THE PLANT · UCDP GED<br><br>EACH COLUMN = ONE RECORDED LOCATION · HEIGHT = CUMULATIVE EVENTS</div></div>
+<div id="log" class="hud"><div class="h">EVENT LOG · OFF-SITE POWER</div><div class="list"></div></div>
+<div id="timeline" class="hud"><svg viewBox="0 0 1000 118"></svg></div>
+<div id="cap" class="hud"></div>
+
+<div id="attrib"></div>
+<div id="ctl">
+  <button id="bPlay">▶ PLAY</button>
+  <span id="clock">00:00 / 07:00</span>
+  <div id="scrub"><div class="track"></div><div class="fill"></div></div>
+  <button id="bCap" class="act" title="Captions (C)">CC</button>
+  <button id="bPres" title="Pause at the end of each chapter (P)">PRESENTER</button>
+  <button id="bRec" title="Hide controls for recording (R)">REC MODE</button>
+  <button id="bHelp">?</button>
+</div>
+<div id="help">
+  SPACE play / pause · ← → previous / next chapter · HOME restart<br>
+  C captions · P presenter mode (holds at each chapter end) · R record mode (hides controls) · F fullscreen<br>
+  URL: ?t=95 start at 95 s · ?scene=repair · ?rec=1 · ?nocap=1
+</div>
+<div id="loading">LOADING TERRAIN</div>
+
+<script src="data.js"></script>
+<script src="extra.js"></script>
+<script src="story.js"></script>
+<script src="film.js"></script>
+</body>
+</html>
