@@ -44,6 +44,9 @@ const map = new maplibregl.Map({
       esri: { type: 'raster', tileSize: 256, maxzoom: 18, tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' },
       lights: { type: 'raster', tileSize: 256, maxzoom: 8, tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png'], attribution: 'NASA Black Marble 2016 / GIBS' },
       dem: dem(), demhs: dem(),
+      ...Object.fromEntries(['2026-01-24'].map(d => ['dnb' + d.replace(/-/g, ''), { type: 'raster', tileSize: 256, maxzoom: 8,
+        tiles: [`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance/default/${d}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`],
+        attribution: 'VIIRS Day/Night Band, NOAA-20, NASA GIBS' }])),
     },
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': '#07090a' } },
@@ -53,6 +56,7 @@ const map = new maplibregl.Map({
       { id: 's2025', type: 'raster', source: 's2025', paint: { ...grade } },
       { id: 'esri', type: 'raster', source: 'esri', paint: { ...grade, 'raster-saturation': -0.3, 'raster-brightness-max': 0.9 } },
       { id: 'hillshade', type: 'hillshade', source: 'demhs', paint: { 'hillshade-exaggeration': 0, 'hillshade-shadow-color': '#000', 'hillshade-highlight-color': '#fff', 'hillshade-accent-color': '#000', 'hillshade-illumination-direction': 315 } },
+      { id: 'dnb20260124', type: 'raster', source: 'dnb20260124', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.55, 'raster-saturation': -1 } },
       { id: 'lights', type: 'raster', source: 'lights', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.2 } },
     ],
   },
@@ -118,6 +122,9 @@ function buildLayers() {
   map.addSource('routes', { type: 'geojson', data: D.routes || FC([]) });
   map.addSource('trucks', { type: 'geojson', data: FC([]) });
   map.addSource('water', { type: 'geojson', data: D.water || FC([]) });
+  map.addSource('railMain', { type: 'geojson', data: D.railMain || FC([]) });
+  map.addSource('railDisused', { type: 'geojson', data: D.railDisused || FC([]) });
+  map.addSource('supplyEvents', { type: 'geojson', data: D.supplyEvents || FC([]) });
   map.addSource('arrow', { type: 'geojson', data: arrowHead });
   map.addSource('trenches', { type: 'geojson', data: X.trenches || FC([]) });
   map.addSource('artillery', { type: 'geojson', data: X.artillery || FC([]) });
@@ -146,6 +153,9 @@ function buildLayers() {
   add({ id: 'routes-glow', type: 'line', source: 'routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': rc, 'line-width': 12, 'line-blur': 8, 'line-opacity': 0 } });
   add({ id: 'routes', type: 'line', source: 'routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': rc, 'line-width': 2.6, 'line-opacity': 0 } });
   add({ id: 'trucks', type: 'circle', source: 'trucks', paint: { 'circle-radius': 3.2, 'circle-color': '#fff', 'circle-stroke-width': 1.5, 'circle-stroke-color': rc, 'circle-opacity': 0, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'rail-main', type: 'line', source: 'railMain', paint: { 'line-color': '#c9d1cd', 'line-width': ['match', ['get', 'u'], 'main', 1.6, 1.0], 'line-dasharray': [1, 1], 'line-opacity': 0 } });
+  add({ id: 'rail-disused', type: 'line', source: 'railDisused', paint: { 'line-color': '#ff6b5a', 'line-width': 2, 'line-dasharray': [1.5, 2], 'line-opacity': 0 } });
+  add({ id: 'supply-events', type: 'circle', source: 'supplyEvents', paint: { 'circle-color': '#ff3b2f', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3.5, 12, 7], 'circle-blur': 0.2, 'circle-opacity': 0, 'circle-stroke-width': 1, 'circle-stroke-color': '#ffd0c8', 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'proposed', type: 'line', source: 'proposed', paint: { 'line-color': '#ffffff', 'line-width': 2, 'line-dasharray': [2, 2.5], 'line-opacity': 0 } });
   add({ id: 'arrow', type: 'fill', source: 'arrow', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0 } });
   add({ id: 'ucdp-glow', type: 'circle', source: 'ucdp', paint: { 'circle-color': '#ff5a45', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 8, 12, 22], 'circle-blur': 1, 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
@@ -158,7 +168,7 @@ function buildLayers() {
   add({ id: 'plant-dot', type: 'circle', source: 'plant', paint: { 'circle-color': '#fff', 'circle-radius': 4, 'circle-blur': 0.3, 'circle-opacity': 0 } });
 
   reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('s2023', pp('s2023', 'raster-opacity')); reg('s2025', pp('s2025', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
-  reg('lights', pp('lights', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
+  reg('lights', pp('lights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
   reg('reservoir', pp('res-fill', 'fill-opacity', 0.35));
   reg('frontline', pp('front-fill', 'fill-opacity', 0.12), pp('front-line', 'line-opacity', 0.75));
   reg('canals', pp('canals', 'line-opacity'));
@@ -169,6 +179,9 @@ function buildLayers() {
   reg('zones', pp('zones-line', 'line-opacity', 1), pp('zones-fill', 'fill-opacity', 1));
   L.zones.set = v => { map.setPaintProperty('zones-line', 'line-opacity', ['*', 0.9 * v, ['min', 1, ['coalesce', ['feature-state', 'f'], 0]]]); map.setPaintProperty('zones-fill', 'fill-opacity', ['*', 0.35 * v, ['coalesce', ['feature-state', 'f'], 0]]); };
   reg('proposed', pp('proposed', 'line-opacity'), pp('arrow', 'fill-opacity'));
+  reg('rail', pp('rail-main', 'line-opacity', 0.7));
+  reg('railDisused', pp('rail-disused', 'line-opacity'));
+  reg('supplyEvents', pp('supply-events', 'circle-opacity', 0.9), pp('supply-events', 'circle-stroke-opacity', 0.9));
   reg('water', pp('water-fill', 'fill-opacity', 0.22), pp('water-line', 'line-opacity', 0.9));
   reg('roads', pp('roads', 'line-opacity', 0.65));
   reg('routes', pp('routes-glow', 'line-opacity', 0.45), pp('routes', 'line-opacity', 1));
@@ -276,12 +289,12 @@ function updateParticles(dt, dir, zoom) {
   flowParts.forEach(fp => { if (!lineState[fp.line]) return; for (let d = phase; d < fp.len; d += spacing) f.push({ type: 'Feature', properties: { line: fp.line }, geometry: { type: 'Point', coordinates: along(fp, d) } }); });
   map.getSource('particles').setData(FC(f));
 }
-let tphase = 0;
+let tphase = 0, routeFilter = null;
 function updateTrucks(dt, zoom) {
   const spacing = 6, speed = 6 * Math.pow(2, 8.5 - zoom); // km between trucks, km/s of film time (zoom-relative)
   tphase = (tphase + speed * dt) % spacing;
   const f = [];
-  routeParts.forEach(r => { const sp = Math.min(spacing, Math.max(0.6, r.len / 3)); for (let d = tphase % sp; d < r.len; d += sp) f.push({ type: 'Feature', properties: { kind: r.kind }, geometry: { type: 'Point', coordinates: along(r, d) } }); });
+  routeParts.forEach(r => { if (routeFilter && !routeFilter.includes(r.kind)) return; const sp = Math.min(spacing, Math.max(0.6, r.len / 3)); for (let d = tphase % sp; d < r.len; d += sp) f.push({ type: 'Feature', properties: { kind: r.kind }, geometry: { type: 'Point', coordinates: along(r, d) } }); });
   map.getSource('trucks').setData(FC(f));
 }
 const dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,4,0],[0,0.5,3,3.5],[0,1,3,3],[0,1.5,3,2.5],[0,2,3,2],[0,2.5,3,1.5],[0,3,3,1],[0,3.5,3,0.5]];
@@ -302,6 +315,9 @@ function enter(i, snap) {
   D.zones.features.forEach(f => map.setFeatureState({ source: 'zones', id: f.properties.id }, { f: 0 }));
   $('#loss').classList.remove('on');
   buildCallouts(sc);
+  const rf = sc.routeKinds ? ['in', ['get', 'kind'], ['literal', sc.routeKinds]] : null;
+  ['routes', 'routes-glow', 'trucks'].forEach(id => map.getLayer(id) && map.setFilter(id, rf));
+  routeFilter = sc.routeKinds || null;
   $('#chap .n').textContent = sc.chapter ? `CHAPTER ${sc.chapter}` : ''; $('#chap .t').textContent = sc.chapter ? sc.name : '';
   $('#chap').style.opacity = sc.chapter ? 1 : 0;
   $('#card .n').textContent = sc.chapter; $('#card .t').textContent = sc.name;
@@ -326,7 +342,7 @@ function render(dt) {
     Object.entries(w).forEach(([l, v]) => force(l, v)); }
   if (sc.stamps) { let s = sc.stamps[0][1]; sc.stamps.forEach(([t, v]) => { if (tl >= t) s = v; }); setStamp(s, 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E'); }
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
-  if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force('lights', lerp(sc.dim.from, sc.dim.to, u)); }
+  if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force(sc.dim.layer || 'lights', lerp(sc.dim.from, sc.dim.to, u)); }
   if (sc.id === 'repair') updateRepair(sc, tl);
   if (sc.counter) { const k = sc.counter, n = Math.round(k.n * ease.out(clamp((tl - k.t0) / (k.t1 - k.t0), 0, 1))); $('#counter .v').textContent = n; $('#counter .k').textContent = k.label; $('#counter .note').textContent = k.note || '';
     $('#counter').style.opacity = clamp((tl - k.t0 + 1) / 1.5, 0, 1) * clamp((sc.dur - tl) / 1.5, 0, 1); }
@@ -362,7 +378,8 @@ function render(dt) {
   const chapterCard = sc.chapter && tl > 0.6 && tl < 5.2;
   $('#card').classList.toggle('on', !!chapterCard);
   $('#chap').style.opacity = sc.chapter && !chapterCard ? 1 : 0;
-  const tOn = (sc.titleCard && tl > 3 && tl < 21) || (sc.endCard && tl > (sc.capUntil || 13));
+  const tc = sc.titleCard === true ? { t0: 3, t1: 21 } : sc.titleCard;
+  const tOn = (tc && tl > tc.t0 && tl < tc.t1) || (sc.endCard && tl > (sc.capUntil || 13));
   $('#title .cr').textContent = sc.endCard ? 'Sources · IAEA updates via World Nuclear Association · UCDP GED · OpenStreetMap · Sentinel-2 cloudless (EOX) · Esri World Imagery · NASA Black Marble · AWS Terrain Tiles' : 'GSAPP · Advanced V Studio · Fall 2026';
   $('#dimmer').style.opacity = sc.endCard && tl > (sc.capUntil || 13) ? 0.45 : 0;
   $('#title').classList.toggle('on', !!tOn);
