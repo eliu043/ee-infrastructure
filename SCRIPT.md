@@ -69,14 +69,26 @@ Each chapter's caption appears after its chapter card (~5 s in).
 | 1:02 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Grid pulses outward; particles flow out |
 | 1:32 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Frontline along the reservoir |
 | 1:58 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Energy / Water / Labor callouts |
-| 2:22 | 04 Water | Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plants canals depleted. | Imagery 2021 → 2023 → 2024 → 2025; pond, canals, wells |
-| 3:08 | 05 Not so soon | Eventually Russia wants to connect ZNPP to the national grid, but not so soon. | Schematic arrow |
-| 3:23 | 06 Shelling and repair | In the meantime, Russia's shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force. | Outage timeline 2022–26, damage zones, plus crew road routes |
-| 4:27 | 07 Sovereignty becomes dependency | Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns. | Close orbit; power flows **into** the plant |
-| 4:59 | 08 Blackout and supply | During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia's shelling of roads and railways. | Counter to 8. Diesel generators, then the Melitopol supply route, the disused rail branch, and fatal events along the route |
-| 5:43 | 09 Frontier | Furthermore, trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | UCDP event columns rise 2022 → 2026 |
+| 2:22 | 04 Water | Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plants canals depleted. | Reservoir drains 2021 → 2023 → pond 2024 → **close-up of the spray ponds with the reported well zone** (11 wells, ~250 m³/h) → pond and thermal plant canals 2025, with McKenzie's measured shrinkage 9.60 → 8.66 km² |
+| 3:16 | 05 Not so soon | Eventually Russia wants to connect ZNPP to the national grid, but not so soon. | Schematic arrow |
+| 3:31 | 06 Shelling and repair | In the meantime, Russia's shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force. | Outage timeline 2022–26, damage zones, plus crew road routes |
+| 4:35 | 07 Sovereignty becomes dependency | Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns. | Close orbit; power flows **into** the plant |
+| 5:07 | 08 Blackout and supply | During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia's shelling of roads and railways. | Counter to 8. Diesel generators, then the Melitopol supply route, the disused rail branch, and fatal events along the route |
+| 5:47 | 09 Frontier | Furthermore, trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | UCDP event columns rise 2022 → 2026 |
 | 6:21 | 10 Winter | As winter approaches, more cities across Ukraine are bracing for long dark months while ZNPP remains suspended between occupation, disrepair, and the threat of nuclear catastrophe. | Ukraine's lights dim; ZNPP beacon |
 | 6:46 | End | — | Title and credits |
+
+### Water and wells evidence
+- **Count, output and power:** the IAEA, as reported by Nuclear Engineering International, gives:
+  - 1 well (24 Aug 2023), "located close to the plant's sprinkler ponds";
+  - plans for "an additional 10-12 wells around the perimeter of the sprinkler ponds";
+  - 9 wells (20 Sep 2023);
+  - **11 wells feeding ~250 m³/h to the sprinkler ponds** (14 Nov 2023), with pumps that can run on the two common emergency diesel generators.
+  
+  Sources: [NEI 24 Aug 2023](https://www.neimagazine.com/news/new-groundwater-sources-begin-to-supply-zaporizhia-npp-11096354/), [NEI 20 Sep 2023](https://www.neimagazine.com/news/more-wells-drilled-at-zaporizhia-npp-11160730/), [NEI 14 Nov 2023](https://www.neimagazine.com/news/iaea-monitors-maintenance-activities-at-zaporizhia-npp-11297138/). The IAEA's own pages were not reachable from here, so cite the IAEA updates directly if you can.
+- **Where:** no source publishes well coordinates. The film draws the **reported zone**: a band around the perimeter of the spray ponds, from their OpenStreetMap outlines (`research/logistics/wells-zone.geojson`). It is not a set of well points.
+- **Imagery check:** I compared Esri Wayback imagery of the spray-pond block from before (Dec 2022 release) and after (Feb 2024 release) the drilling. At ~0.5–1 m resolution, and with a different viewing angle, individual wellheads can't be identified, so no well points are placed. 30 cm Pléiades Neo imagery (what McKenzie used) might show them.
+- **Pond decline:** the cooling pond was dropping ~1 cm a day (NEI, Aug 2023). McKenzie Intelligence / Greenpeace Ukraine ([report, Dec 2025](https://www.greenpeace.org/ukraine/en/news/5438/new-level-of-militarization/)) measured the pond and channels at 9,599,617 m² (3 Jul 2022), 8,767,820 m² (1 Jun 2025) and 8,662,141 m² (12 Aug 2025). They also found a dam built across the intake channel in summer 2025, creating a smaller pond. The thermal plant canal was the pond's other supply ("its other main supply of water", NEI Aug 2023).
 
 ### Supply evidence (`research/logistics/`)
 - **Road:** Melitopol → ZNPP is 126 km (229 km from Crimea). The last 30 km run within 20 km of the river front.
@@ -90,7 +102,7 @@ Each chapter's caption appears after its chapter card (~5 s in).
   - The fade to dark is an illustration. I checked the 31 Jan pass: the sky was clear, but near full moon the snow is brighter than the city, so it can't show the outage. The on-screen source line says so.
   - Keep your own source for the blackout itself.
 - **Unsourced figures:** confirm or cut 6 × VVER-1000 / ~6 GW / a fifth of national generation / seized 4 March 2022 / no generation since Sept 2022.
-- **Water:** the wells' locations aren't mapped, and the pond change comes from annual composites.
+- **Water:** the wells are shown as a reported zone, not as points. The pond imagery comes from annual composites; the area figures are McKenzie's.
 - **Frontier:** the event columns also include the occupied bank.
 - **Winter:** the night-lights dimming is illustrative.
 

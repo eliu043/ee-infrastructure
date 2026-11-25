@@ -124,6 +124,8 @@ function buildLayers() {
   map.addSource('water', { type: 'geojson', data: D.water || FC([]) });
   map.addSource('railMain', { type: 'geojson', data: D.railMain || FC([]) });
   map.addSource('railDisused', { type: 'geojson', data: D.railDisused || FC([]) });
+  map.addSource('wells', { type: 'geojson', data: D.wells || FC([]) });
+  map.addSource('wellCand', { type: 'geojson', data: D.wellCandidates || FC([]) });
   map.addSource('supplyEvents', { type: 'geojson', data: D.supplyEvents || FC([]) });
   map.addSource('arrow', { type: 'geojson', data: arrowHead });
   map.addSource('trenches', { type: 'geojson', data: X.trenches || FC([]) });
@@ -155,6 +157,11 @@ function buildLayers() {
   add({ id: 'trucks', type: 'circle', source: 'trucks', paint: { 'circle-radius': 3.2, 'circle-color': '#fff', 'circle-stroke-width': 1.5, 'circle-stroke-color': rc, 'circle-opacity': 0, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'rail-main', type: 'line', source: 'railMain', paint: { 'line-color': '#c9d1cd', 'line-width': ['match', ['get', 'u'], 'main', 1.6, 1.0], 'line-dasharray': [1, 1], 'line-opacity': 0 } });
   add({ id: 'rail-disused', type: 'line', source: 'railDisused', paint: { 'line-color': '#ff6b5a', 'line-width': 2, 'line-dasharray': [1.5, 2], 'line-opacity': 0 } });
+  add({ id: 'wells-zone', type: 'fill', source: 'wells', filter: ['==', ['get', 'kind'], 'well-zone'], paint: { 'fill-color': '#5cc8ff', 'fill-opacity': 0 } });
+  add({ id: 'wells-zone-line', type: 'line', source: 'wells', filter: ['==', ['get', 'kind'], 'well-zone'], paint: { 'line-color': '#bfeaff', 'line-width': 1.2, 'line-dasharray': [2, 2], 'line-opacity': 0 } });
+  add({ id: 'spray-ponds', type: 'fill', source: 'wells', filter: ['==', ['get', 'kind'], 'spray-ponds'], paint: { 'fill-color': '#5cc8ff', 'fill-opacity': 0 } });
+  add({ id: 'well-cand', type: 'circle', source: 'wellCand', paint: { 'circle-radius': 6, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#5cc8ff', 'circle-stroke-width': 2, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'well-cand-dot', type: 'circle', source: 'wellCand', paint: { 'circle-radius': 2, 'circle-color': '#e6f7ff', 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'supply-events', type: 'circle', source: 'supplyEvents', paint: { 'circle-color': '#ff3b2f', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3.5, 12, 7], 'circle-blur': 0.2, 'circle-opacity': 0, 'circle-stroke-width': 1, 'circle-stroke-color': '#ffd0c8', 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'proposed', type: 'line', source: 'proposed', paint: { 'line-color': '#ffffff', 'line-width': 2, 'line-dasharray': [2, 2.5], 'line-opacity': 0 } });
   add({ id: 'arrow', type: 'fill', source: 'arrow', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0 } });
@@ -182,6 +189,8 @@ function buildLayers() {
   reg('rail', pp('rail-main', 'line-opacity', 0.7));
   reg('railDisused', pp('rail-disused', 'line-opacity'));
   reg('supplyEvents', pp('supply-events', 'circle-opacity', 0.9), pp('supply-events', 'circle-stroke-opacity', 0.9));
+  reg('wells', pp('wells-zone', 'fill-opacity', 0.35), pp('wells-zone-line', 'line-opacity', 0.9), pp('spray-ponds', 'fill-opacity', 0.45),
+    pp('well-cand', 'circle-stroke-opacity'), pp('well-cand-dot', 'circle-opacity'));
   reg('water', pp('water-fill', 'fill-opacity', 0.22), pp('water-line', 'line-opacity', 0.9));
   reg('roads', pp('roads', 'line-opacity', 0.65));
   reg('routes', pp('routes-glow', 'line-opacity', 0.45), pp('routes', 'line-opacity', 1));
@@ -491,6 +500,7 @@ function render(dt) {
   if (sc.imagerySeq) { const q = sc.imagerySeq; const w = {}; q.forEach(([, l]) => w[l] = 0);
     for (let k = 0; k < q.length; k++) { const u = k === 0 ? 1 : clamp((tl - q[k][0]) / 2, 0, 1); if (u > 0) { Object.keys(w).forEach(l => w[l] *= (1 - u)); w[q[k][1]] = u; } }
     Object.entries(w).forEach(([l, v]) => force(l, v)); }
+  if (sc.wellsOn) { const [a, b] = sc.wellsOn; force('wells', clamp((tl - a) / 1.5, 0, 1) * clamp((b - tl) / 1.5, 0, 1)); }
   if (sc.stamps) { let s = sc.stamps[0][1]; sc.stamps.forEach(([t, v]) => { if (tl >= t) s = v; }); setStamp(s, 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E'); }
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
   if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force(sc.dim.layer || 'lights', lerp(sc.dim.from, sc.dim.to, u)); }
