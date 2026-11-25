@@ -185,11 +185,17 @@ function buildCallouts(sc) {
     const el = document.createElement('div'); el.className = `co ${c.side || 'c'}`;
     el.innerHTML = `<div class="stem" data-h="${c.h || 60}"></div><div class="dot"></div><div class="lab" style="bottom:${c.h || 60}px"><span class="i">${String(i + 1).padStart(2, '0')}</span><b>${c.title}</b>${c.sub ? `<small>${c.sub}</small>` : ''}</div>`;
     const mk = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(c.ll).addTo(map);
-    markers.push({ c, el, stem: el.querySelector('.stem'), on: false, mk });
+    markers.push({ c, el, stem: el.querySelector('.stem'), lab: el.querySelector('.lab'), dot: el.querySelector('.dot'), on: false, dim: false, mk });
   });
 }
+const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 function updateCallouts(tl) {
   markers.forEach(m => { const on = tl >= m.c.t && tl < m.c.t + m.c.d; if (on !== m.on) { m.on = on; m.el.classList.toggle('on', on); m.stem.style.height = on ? m.stem.dataset.h + 'px' : '0px'; } });
+  // declutter: when labels collide as the camera moves, the newest stays solid and older ones fade back
+  const vis = markers.filter(m => m.on).sort((a, b) => b.c.t - a.c.t)
+    .map(m => ({ m, lab: m.lab.getBoundingClientRect(), dot: m.dot.getBoundingClientRect() }));
+  vis.forEach((a, i) => { const d = vis.slice(0, i).some(b => hit(a.lab, b.lab) || hit(a.lab, b.dot)); if (d !== a.m.dim) { a.m.dim = d; a.m.el.classList.toggle('dim', d); } });
+  markers.forEach(m => { if (!m.on && m.dim) { m.dim = false; m.el.classList.remove('dim'); } });
 }
 
 /* ---------- timeline (scene 05) ---------- */
@@ -353,11 +359,11 @@ function blended(c) {
   if (blend.arc == null) { // far jumps pull back a little (fly-to), near ones just glide
     const a = blend.from, d = Math.hypot(mercX(c.c[0]) - mercX(a.c[0]), mercY(c.c[1]) - mercY(a.c[1])) * 512 * Math.pow(2, Math.min(a.z, c.z));
     blend.arc = clamp(Math.log2(1 + d / innerWidth) * 1.1, 0, 3);
-    blend.dur = 1300 + 450 * blend.arc + 70 * Math.abs(c.z - a.z) + 4 * Math.abs(((c.b - a.b) % 360 + 540) % 360 - 180);
+    blend.dur = Math.min(3800, 1400 + 500 * blend.arc + 90 * Math.abs(c.z - a.z) + 9 * Math.abs(((c.b - a.b) % 360 + 540) % 360 - 180));
   }
   const u = clamp((performance.now() - blend.t0) / blend.dur, 0, 1);
   if (u >= 1) { blend = null; return c; }
-  return mixPose(blend.from, c, ease.io(u), blend.arc);
+  return mixPose(blend.from, c, 0.5 - Math.cos(Math.PI * u) / 2, blend.arc); // sine ease: half the peak speed of a cubic
 }
 
 /* ---------- opening: centred title, then the panel ---------- */
@@ -451,8 +457,9 @@ function render(dt) {
   $('#scrub .fill').style.width = (clamp(tl / sc.dur, 0, 1) * 100) + '%';
   $('#bNext').classList.toggle('ready', held);
 }
-// scene-driven values (imagery crossfade, dimming) snap during playback but ease in while the camera blends
-function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!blend) { o.cur = v; o.set(v); } }
+// scene-driven values (imagery crossfade, dimming) follow the clock exactly once the layer is there,
+// but a big jump (entering a slide, or while the camera blends) eases in instead of popping
+function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!blend && Math.abs(v - o.cur) < 0.05) { o.cur = v; o.set(v); } }
 
 function loop(now) {
   const dt = lastNow == null ? 0 : Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
@@ -549,6 +556,8 @@ map.on('load', () => {
 // test hook: render a given time without playing
 window.__film = { seek: t => { seek(t); }, go, get T() { return T; }, TOTAL, play: () => setPlay(true), get intro() { return intro; },
   step: (dt = 0.05) => { render(dt); map.redraw(); },
+  tick: (dt = 1 / 30) => { T = clamp(T + dt, 0, TOTAL - 0.001); render(dt); }, // advance the clock by hand (continuity tests)
+  get blending() { return !!blend; }, get scene() { return ST.scenes[cur] && ST.scenes[cur].id; },
   // render frames leading up to t (for headless checks while the tab is in the background)
   shot: async (t, n = 40) => { seek(t - 2); const l = $('#loading'); if (l) l.remove();
     for (let i = 0; i < n; i++) { T += 2 / n; render(2 / n); map.redraw(); await new Promise(r => setTimeout(r, 80)); } return T; } };

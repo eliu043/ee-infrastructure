@@ -16,7 +16,7 @@ const P = {
 window.STORY = {
   title: 'Infrastructure: Instruments of Power',   // shown centred at the start; text after ':' becomes the second line
   exaggeration: 6,            // vertical exaggeration in wide shots (shown on screen)
-  exaggerationClose: 1.5,     // …easing to this in close-ups (zoom ≥ 13) so lines don't wobble on the surface model
+  exaggerationClose: 1,       // …easing to true scale in close-ups (zoom ≥ 13); above 1 the elevation data warps buildings and riverbanks
   places: P,
   scenes: [
   /* 00 ─────────────────────────────────────────── */
@@ -202,7 +202,7 @@ window.STORY = {
       { t: 16, d: 17, ll: P.kharkiv, title: 'Kharkiv', sub: '', h: 30 },
       { t: 17, d: 16, ll: P.odesa, title: 'Odesa', sub: '', h: 30 },
       { t: 18, d: 15, ll: P.dnipro, title: 'Dnipro', sub: '', h: 30 },
-      { t: 19, d: 14, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50 },
+      { t: 19, d: 14, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50, side: 'l' },
     ],
     sources: 'Lights dimmed for illustration — baseline NASA Black Marble 2016; not a measurement of 2026 outages',
   },
