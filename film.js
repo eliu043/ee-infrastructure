@@ -307,17 +307,15 @@ function slideHTML(sc, dir) {
   const cls = `slide${dir < 0 ? ' back' : ''}`;
   if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div></div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
-    <p class="lede">${esc(sc.vo)}</p><p class="src">${esc(CREDITS)}</p>
-    <button class="restart" id="bRestart">↺ Start again</button></div>`;
+    <p class="lede">${esc(sc.vo)}</p><p class="src">${esc(CREDITS)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
     <p class="lede">${esc(sc.vo)}</p>${sc.sources ? `<p class="src">${esc(sc.sources)}</p>` : ''}</div>`;
 }
 function renderPanel(sc, dir) {
   const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
-  const r = $('#bRestart'); if (r) r.onclick = () => go(FIRST);
   $('#pg').textContent = `${Math.max(1, cur - FIRST + 1)} / ${N - FIRST}`;
-  $('#bBack').disabled = cur <= FIRST; $('#bNext').disabled = cur === N - 1;
+  $('#bBack').disabled = cur <= FIRST;
   $('#menu').querySelectorAll('a').forEach(a => { const on = +a.dataset.i === cur; a.classList.toggle('cur', on); on ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current'); });
 }
 function buildMenu() {
@@ -451,7 +449,7 @@ function render(dt) {
   $('#cap').classList.toggle('on', capOn && !!sc.vo && tl > 1.5 && tl < (sc.capUntil || sc.dur - 0.4) && !chapterCard);
   if (isRec()) $('#readout').innerHTML = `${c.c[1].toFixed(4)}°N  ${c.c[0].toFixed(4)}°E<br>ALT Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · HDG ${(((c.b % 360) + 360) % 360).toFixed(0).padStart(3, '0')}°<br>TERRAIN ×${ex} VERTICAL`;
   $('#scrub .fill').style.width = (clamp(tl / sc.dur, 0, 1) * 100) + '%';
-  $('#bNext').classList.toggle('ready', held && cur < N - 1);
+  $('#bNext').classList.toggle('ready', held);
 }
 // scene-driven values (imagery crossfade, dimming) snap during playback but ease in while the camera blends
 function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!blend) { o.cur = v; o.set(v); } }
@@ -487,7 +485,9 @@ function go(i) {
   startBlend();
   T = ST.scenes[i].start + 0.001; setPlay(true);
 }
-const next = () => go(cur + 1), back = () => go(cur - 1);
+// after the last slide, Next loops back to the opening title
+function restart() { toggleMenu(false); dir = 1; startBlend(); T = 0.001; setPlay(true); if (!isRec()) startIntro(); }
+const next = () => cur >= N - 1 ? restart() : go(cur + 1), back = () => go(cur - 1);
 function seekLocal(t, play) { // within the current slide
   const sc = ST.scenes[cur]; if (!sc) return;
   if (Math.abs(T - (sc.start + t)) > 1.5) startBlend();
@@ -516,7 +516,7 @@ addEventListener('keydown', e => {
   const onBtn = e.target.closest && e.target.closest('button,a');
   if (onBtn && (e.key === 'Enter' || e.key === ' ')) return; // focused controls activate normally
   switch (e.key) {
-    case ' ': e.preventDefault(); held && cur < N - 1 ? next() : togglePlay(); break;
+    case ' ': e.preventDefault(); held ? next() : togglePlay(); break;
     case 'ArrowRight': case 'PageDown': e.preventDefault(); next(); break;
     case 'ArrowLeft': case 'PageUp': e.preventDefault(); back(); break;
     case 'Home': go(FIRST); break;
