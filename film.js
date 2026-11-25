@@ -366,6 +366,7 @@ const LEGEND = [
   ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights, 2016'],
   ['dnb20260124', sw.fill('linear-gradient(90deg,#0b0d10,#f2f2f2)'), 'Night lights, 24 Jan 2026 (VIIRS)'],
   ['water', sw.fill('rgba(92,200,255,.3)', '1px solid #8fdcff'), 'Cooling water'],
+  ['water', sw.fill('rgba(92,200,255,.35)', '1px dashed #bfeaff'), 'Reported well zone', sc => !!sc.wellsOn],
   ['routes', sw.line('#ffd166', 3), 'Diesel route (shortest by road)', sc => !sc.routeKinds || sc.routeKinds.includes('diesel')],
   ['routes', sw.line('#9dfcc4', 3), 'Repair crew route · Ukrainian side', sc => !sc.routeKinds || sc.routeKinds.includes('crew-ua')],
   ['routes', sw.line('#ff8a7a', 3), 'Repair crew route · Russian side', sc => !sc.routeKinds || sc.routeKinds.includes('crew-ru')],
