@@ -27,37 +27,70 @@ let acc = 0;
 ST.scenes.forEach(s => { s.start = acc; acc += s.dur; if (s.dates) s.dm = dateMap(s.dates); });
 const TOTAL = acc;
 
+/* ---------- tile loading ----------
+   Imagery tiles go through `tile://<source>/z/x/y`: one in-memory cache shared by MapLibre and the prefetcher below
+   (the tile servers' HTTP caching doesn't reliably serve a second request, so warming the browser cache doesn't help).
+   A tile MapLibre gives up on mid-flight (the camera moved on) still lands in the cache for the next pass; failed
+   tiles are retried. Terrain tiles have the same treatment in flatten.js. */
+const TPL = {};   // source id → real URL template
+const TILES = (() => {
+  const cache = new Map(), MAX = 1400;   // url → Promise<ArrayBuffer> (≈ 40 MB of JPEG/PNG at most)
+  async function load(url) {
+    for (let k = 0; ; k++) {
+      try { const r = await fetch(url, { credentials: 'omit' }); if (r.ok) return r.arrayBuffer(); if (r.status < 500 || k >= 2) throw new Error(`HTTP ${r.status}`); }
+      catch (e) { if (k >= 2) throw e; }
+      await new Promise(res => setTimeout(res, 400 * (k + 1)));
+    }
+  }
+  function get(url) {
+    let p = cache.get(url);
+    if (p) { cache.delete(url); cache.set(url, p); return p; }
+    p = load(url); cache.set(url, p); p.catch(() => cache.delete(url));
+    if (cache.size > MAX) cache.delete(cache.keys().next().value);
+    return p;
+  }
+  maplibregl.addProtocol('tile', async params => {
+    const [id, z, x, y] = params.url.slice(7).split('/');
+    const data = await get(TPL[id].replace('{z}', z).replace('{x}', x).replace('{y}', y));
+    return { data: data.slice(0) };
+  });
+  return { get, has: url => cache.has(url) };
+})();
+const cached = (id, src) => { TPL[id] = src.tiles[0]; return { ...src, tiles: [`tile://${id}/{z}/{x}/{y}`] }; };
+
 /* ---------- map ---------- */
 const s2 = y => ({ type: 'raster', tileSize: 256, maxzoom: 15, attribution: `Sentinel-2 cloudless ${y} by <a href="https://s2maps.eu">EOX IT Services GmbH</a> (contains modified Copernicus Sentinel data ${y})`,
   tiles: [`https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-${y}_3857/default/g/{z}/{y}/{x}.jpg`] });
-const dem = () => ({ type: 'raster-dem', encoding: 'terrarium', tileSize: 256, maxzoom: 14,
-  tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], attribution: 'Terrain: Mapzen / AWS Terrain Tiles' });
-const grade = { 'raster-saturation': -0.35, 'raster-contrast': 0.12, 'raster-brightness-max': 0.9, 'raster-opacity': 0, 'raster-fade-duration': 0 };
+// terrain tiles go through flatten.js, which levels the ground under the plant model (and retries failed tiles)
+// the hillshade copy asks at 512 px: the same tiles the terrain uses (it requests a zoom level lower), so they're shared
+const dem = (size = 256) => ({ type: 'raster-dem', encoding: 'terrarium', tileSize: size, maxzoom: 14,
+  tiles: [window.PlantFlat ? PlantFlat.tileUrl : 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], attribution: 'Terrain: Mapzen / AWS Terrain Tiles' });
+const grade = { 'raster-saturation': -0.35, 'raster-contrast': 0.12, 'raster-brightness-max': 0.9, 'raster-opacity': 0, 'raster-fade-duration': 200 }; // late tiles ease in rather than pop
 
 const map = new maplibregl.Map({
-  container: 'map', interactive: false, attributionControl: false, maxPitch: 85, fadeDuration: 0,
+  container: 'map', interactive: false, attributionControl: false, maxPitch: 85, fadeDuration: 0, refreshExpiredTiles: false, maxTileCacheZoomLevels: 8,
   center: ST.scenes[0].cam[0].c, zoom: ST.scenes[0].cam[0].z, pitch: ST.scenes[0].cam[0].p, bearing: ST.scenes[0].cam[0].b,
   style: {
     version: 8,
     sources: {
-      s2021: s2(2021), s2023: s2(2023), s2024: s2(2024), s2025: s2(2025),
-      esri: { type: 'raster', tileSize: 256, maxzoom: 18, tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' },
-      lights: { type: 'raster', tileSize: 256, maxzoom: 8, tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png'], attribution: 'NASA Black Marble 2016 / GIBS' },
-      dem: dem(), demhs: dem(),
-      ...Object.fromEntries(['2026-01-24'].map(d => ['dnb' + d.replace(/-/g, ''), { type: 'raster', tileSize: 256, maxzoom: 8,
+      s2021: cached('s2021', s2(2021)), s2023: cached('s2023', s2(2023)), s2024: cached('s2024', s2(2024)), s2025: cached('s2025', s2(2025)),
+      esri: cached('esri', { type: 'raster', tileSize: 256, maxzoom: 18, tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' }),
+      lights: cached('lights', { type: 'raster', tileSize: 256, maxzoom: 8, tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png'], attribution: 'NASA Black Marble 2016 / GIBS' }),
+      dem: dem(), demhs: dem(512),
+      ...Object.fromEntries(['2026-01-24'].map(d => ['dnb' + d.replace(/-/g, ''), cached('dnb' + d.replace(/-/g, ''), { type: 'raster', tileSize: 256, maxzoom: 8,
         tiles: [`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance/default/${d}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`],
-        attribution: 'VIIRS Day/Night Band, NOAA-20, NASA GIBS' }])),
+        attribution: 'VIIRS Day/Night Band, NOAA-20, NASA GIBS' })])),
     },
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': '#07090a' } },
-      { id: 's2021', type: 'raster', source: 's2021', paint: { ...grade } },
-      { id: 's2023', type: 'raster', source: 's2023', paint: { ...grade } },
-      { id: 's2024', type: 'raster', source: 's2024', paint: { ...grade } },
-      { id: 's2025', type: 'raster', source: 's2025', paint: { ...grade } },
-      { id: 'esri', type: 'raster', source: 'esri', paint: { ...grade, 'raster-saturation': -0.3, 'raster-brightness-max': 0.9 } },
-      { id: 'hillshade', type: 'hillshade', source: 'demhs', paint: { 'hillshade-exaggeration': 0, 'hillshade-shadow-color': '#000', 'hillshade-highlight-color': '#fff', 'hillshade-accent-color': '#000', 'hillshade-illumination-direction': 315 } },
-      { id: 'dnb20260124', type: 'raster', source: 'dnb20260124', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.55, 'raster-saturation': -1 } },
-      { id: 'lights', type: 'raster', source: 'lights', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.2 } },
+      { id: 's2021', type: 'raster', source: 's2021', layout: { visibility: 'none' }, paint: { ...grade } },
+      { id: 's2023', type: 'raster', source: 's2023', layout: { visibility: 'none' }, paint: { ...grade } },
+      { id: 's2024', type: 'raster', source: 's2024', layout: { visibility: 'none' }, paint: { ...grade } },
+      { id: 's2025', type: 'raster', source: 's2025', layout: { visibility: 'none' }, paint: { ...grade } },
+      { id: 'esri', type: 'raster', source: 'esri', layout: { visibility: 'none' }, paint: { ...grade, 'raster-saturation': -0.3, 'raster-brightness-max': 0.9 } },
+      { id: 'hillshade', type: 'hillshade', source: 'demhs', layout: { visibility: 'none' }, paint: { 'hillshade-exaggeration': 0, 'hillshade-shadow-color': '#000', 'hillshade-highlight-color': '#fff', 'hillshade-accent-color': '#000', 'hillshade-illumination-direction': 315 } },
+      { id: 'dnb20260124', type: 'raster', source: 'dnb20260124', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.55, 'raster-saturation': -1 } },
+      { id: 'lights', type: 'raster', source: 'lights', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.2 } },
     ],
   },
 });
@@ -491,6 +524,73 @@ function endIntro() {
   setTimeout(() => { intro = 0; document.body.classList.remove('intro'); if (cur === FIRST) syncSound(); else go(FIRST); }, 1100);
 }
 
+/* ---------- which imagery loads, and prefetching ----------
+   MapLibre fetches tiles for every visible layer even at opacity 0, so the five imagery layers (and the hillshade's
+   copy of the terrain) all loaded all the time. A layer is now only visible while its slide uses it or it is still
+   fading. Meanwhile the prefetcher fills the tile cache along the rest of the current slide's camera path, then the
+   next slide's, then the previous one's, so Next and Back land on loaded tiles. */
+const RASTERS = ['s2021', 's2023', 's2024', 's2025', 'esri', 'lights', 'dnb20260124', 'hillshade'];
+function needs(sc) {
+  const n = new Set(RASTERS.filter(id => (sc.layers[id] || 0) > 0));
+  (sc.imagerySeq || []).forEach(([, l]) => n.add(l));
+  if (sc.imagerySwap) { n.add(sc.imagerySwap.from); n.add(sc.imagerySwap.to); }
+  if (sc.dim) n.add(sc.dim.layer || 'lights');
+  return n;
+}
+const visState = {};
+function updateVisibility(sc) {
+  const n = needs(sc);
+  RASTERS.forEach(id => { const o = L[id], v = n.has(id) || (o && (o.cur > 0.002 || o.tgt > 0.002));
+    if (visState[id] !== v) { visState[id] = v; map.setLayoutProperty(id, 'visibility', v ? 'visible' : 'none'); } });
+}
+const PF = { queue: [], active: 0, gen: 0, timer: 0, fetched: 0, last: 0, ms: 0 };
+// camera poses to warm, each with how soon it's likely to be needed (s): this slide from now on, then the next slide
+// from its start (the reader may press Next any time), then the previous one
+function poses(i, tNow) {
+  const out = [], add = (k, from, lead) => { const sc = ST.scenes[k]; if (!sc) return;
+    const ts = new Set([from, sc.dur]); sc.cam.forEach(c => c.t >= from && ts.add(c.t));
+    for (let t = Math.ceil(from / 2.5) * 2.5; t < sc.dur; t += 2.5) ts.add(t);
+    ts.forEach(t => out.push({ sc, t, due: lead + (t - from) })); };
+  add(i, tNow, 0); add(i + 1, 0, 3); add(i - 1, 0, 12);
+  return out.sort((a, b) => a.due - b.due);
+}
+// tiles a camera pose needs, for each imagery source its slide uses and the terrain (MapLibre's own coverage maths)
+function poseTiles({ sc, t }, tr, seen, out) {
+  const c = cam(sc, t); tr.center = new maplibregl.LngLat(c.c[0], c.c[1]); tr.zoom = c.z; tr.pitch = c.p; tr.bearing = c.b;
+  const add = (tpl, size, maxz) => tr.coveringTiles({ tileSize: size, minzoom: 0, maxzoom: maxz, roundZoom: true, terrain: map.terrain }).forEach(id => {
+    const { z, x, y } = id.canonical, u = tpl === 'dem' ? `dem/${z}/${x}/${y}` : tpl.replace('{z}', z).replace('{x}', x).replace('{y}', y);
+    if (!seen.has(u)) { seen.add(u); out.push(u); } });
+  needs(sc).forEach(id => { if (TPL[id]) add(TPL[id], 256, map.getSource(id).maxzoom); });
+  add('dem', 512, 14);   // the terrain asks for its tiles a zoom level below the imagery
+}
+function pumpPrefetch() {
+  const g = PF.gen, limit = map.areTilesLoaded() ? 8 : 4;   // fewer while the screen itself is still loading
+  while (PF.active < limit && PF.queue.length) {
+    const u = PF.queue.shift(); if (!u.startsWith('dem/') && TILES.has(u)) continue; PF.active++; PF.fetched++;
+    const p = u.startsWith('dem/') ? (window.PlantFlat && PlantFlat.tile ? PlantFlat.tile(...u.slice(4).split('/').map(Number)) : Promise.resolve())
+                                   : TILES.get(u);
+    p.catch(() => {}).finally(() => { PF.active--; if (g === PF.gen) pumpPrefetch(); });
+  }
+  if (PF.queue.length && PF.active >= limit) { clearTimeout(PF.timer); PF.timer = setTimeout(pumpPrefetch, 250); }
+}
+const idle = window.requestIdleCallback ? f => requestIdleCallback(f, { timeout: 400 }) : f => setTimeout(() => f({ timeRemaining: () => 8 }), 50);
+function schedulePrefetch(i) {
+  if (!map.transform || !map.transform.coveringTiles) return;
+  PF.gen++; PF.queue = []; clearTimeout(PF.timer); PF.last = performance.now();
+  const g = PF.gen, list = poses(i, clamp(T - ST.scenes[i].start, 0, ST.scenes[i].dur)), seen = new Set(), tr = map.transform.clone();
+  let k = 0;
+  // worked out a few poses at a time in idle moments, so the camera never hitches for it
+  const step = dl => { if (g !== PF.gen) return;
+    const t0 = performance.now();
+    try { do { poseTiles(list[k++], tr, seen, PF.queue); } while (k < list.length && dl.timeRemaining() > 3); }
+    catch (e) { console.warn('prefetch skipped:', e.message); return; }
+    PF.ms = Math.max(PF.ms, performance.now() - t0);
+    pumpPrefetch();
+    if (k < list.length) idle(step);
+  };
+  PF.timer = setTimeout(() => idle(step), 600);   // let the slide's own first tiles go first
+}
+
 /* ---------- scene management ---------- */
 let cur = -1, T = 0, playing = false, lastNow = null, first = true, dir = 1, held = false;
 function sceneAt(t) { for (let i = ST.scenes.length - 1; i >= 0; i--) if (t >= ST.scenes[i].start) return i; return 0; }
@@ -516,10 +616,12 @@ function enter(i, snap) {
   $('#pdata').classList.toggle('on', Object.values(show).some(Boolean));
   if (show.timeline) buildTimeline();
   if (location.hash.slice(1) !== sc.id) history.replaceState(null, '', location.pathname + location.search + '#' + sc.id);
+  schedulePrefetch(i);
 }
 function render(dt) {
   const i = sceneAt(T);
   if (i !== cur) { enter(i, first); first = false; }
+  else if (!blend && performance.now() - PF.last > 6000) schedulePrefetch(cur);   // keep the queue ahead of the camera
   const sc = ST.scenes[i], tl = T - sc.start;
   const c = blended(cam(sc, tl));
   // vertical exaggeration eases with altitude: dramatic when wide, near-true in close-ups
@@ -552,6 +654,7 @@ function render(dt) {
   const k = 1 - Math.exp(-dt * 2.2);
   Object.values(L).forEach(o => { if (Math.abs(o.tgt - o.cur) > 0.003) { o.cur += (o.tgt - o.cur) * k; o.set(o.cur); } else if (o.cur !== o.tgt) { o.cur = o.tgt; o.set(o.cur); } });
   znppPaint();
+  updateVisibility(sc);
 
   // animated details
   if (L.particles.cur > 0.01) updateParticles(dt, sc.flow || 1, c.z);
@@ -610,7 +713,8 @@ const ICON = {
 /* soundtrack: narration + drone, kept in step with the film clock */
 const snd = $('#snd'); let soundOn = !qs.has('mute');
 // load it into memory so it can seek on any server (python's http.server has no byte ranges)
-fetch(snd.getAttribute('src')).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn) snd.play().catch(() => {}); }, { once: true }); }).catch(() => {});
+// (started a couple of seconds after the map loads, at low priority, so the first slide's tiles go first)
+const loadSound = () => fetch(snd.getAttribute('src'), { priority: 'low' }).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn) snd.play().catch(() => {}); }, { once: true }); }).catch(() => {});
 function syncSound() { if (!soundOn || intro) { snd.pause(); return; } try { snd.currentTime = T; } catch (e) {} if (playing) snd.play().catch(() => {}); else snd.pause(); }
 function setSound(v) { soundOn = v; $('#bSnd').innerHTML = ICON[v ? 'snd' : 'mute']; $('#bSnd').setAttribute('aria-label', v ? 'Mute narration' : 'Unmute narration'); $('#bSnd').classList.toggle('off', !v); syncSound(); }
 function setPlay(v) {
@@ -688,10 +792,11 @@ map.on('load', () => {
   const deep = hi >= FIRST || qs.has('t') || qs.has('scene');
   if (!deep && !isRec()) startIntro(); else document.body.classList.remove('intro');
   setSound(soundOn);
+  setTimeout(loadSound, 2500);
   requestAnimationFrame(loop);
 });
 // test hook: render a given time without playing
-window.__film = { seek: t => { seek(t); }, go, get T() { return T; }, TOTAL, play: () => setPlay(true), get intro() { return intro; },
+window.__film = { seek: t => { seek(t); }, go, get prefetch() { return { queued: PF.queue.length, active: PF.active, fetched: PF.fetched, buildMs: Math.round(PF.ms) }; }, get T() { return T; }, TOTAL, play: () => setPlay(true), get intro() { return intro; },
   step: (dt = 0.05) => { render(dt); map.redraw(); },
   tick: (dt = 1 / 30) => { T = clamp(T + dt, 0, TOTAL - 0.001); render(dt); }, // advance the clock by hand (continuity tests)
   get blending() { return !!blend; }, get scene() { return ST.scenes[cur] && ST.scenes[cur].id; },
