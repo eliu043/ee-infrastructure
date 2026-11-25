@@ -330,7 +330,7 @@ function slideHTML(sc, dir) {
 }
 let keyEls = [];
 function renderPanel(sc, dir) {
-  const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
+  const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0; requestAnimationFrame(updateMore);
   keyEls = [...pb.querySelectorAll('#keys li')];
   keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i]; const jump = () => seekLocal(c.t + 0.05, true);
     li.onclick = jump; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); jump(); } }; });
@@ -340,11 +340,12 @@ function renderPanel(sc, dir) {
   $('#bNext span').textContent = cur === 0 ? 'Begin' : 'Next';
   [...$('#menu').querySelectorAll('a')].forEach((a, i) => { a.classList.toggle('cur', i === cur); if (i === cur) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
 }
+function updateMore() { const pb = $('#pbody'); pb.parentElement.classList.toggle('more', pb.scrollHeight - pb.clientHeight - pb.scrollTop > 24); }
 function updateKeys(sc, tl) {
   keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i], on = tl >= c.t && tl < c.t + c.d;
     if (on && !li.classList.contains('on') && playing) { // keep the newest point in view in long lists
       const pb = $('#pbody'), r = li.getBoundingClientRect(), b = pb.getBoundingClientRect();
-      if (r.bottom > b.bottom || r.top < b.top) pb.scrollTo({ top: pb.scrollTop + r.bottom - b.bottom + 12, behavior: 'smooth' }); }
+      if (r.bottom > b.bottom || r.top < b.top) pb.scrollTo({ top: pb.scrollTop + r.bottom - b.bottom + 44, behavior: 'smooth' }); }
     li.classList.toggle('on', on); li.classList.toggle('seen', tl >= c.t + c.d); });
 }
 function buildMenu() {
@@ -364,7 +365,7 @@ function updatePadding() {
   const p = { top: 0, bottom: 0, left: 0, right: 0 };
   if (!isRec()) {
     const r = $('#panel').getBoundingClientRect();
-    if (innerWidth <= 760) p.bottom = Math.round(innerHeight - r.top); else p.left = Math.round(r.right);
+    if (innerWidth <= 900 && innerHeight > 520) p.bottom = Math.round(innerHeight - r.top); else p.left = Math.round(r.right);
   }
   map.setPadding(p);
 }
@@ -522,6 +523,8 @@ $('#bPlay').onclick = togglePlay;
 $('#bBack').onclick = back; $('#bNext').onclick = next;
 $('#bMenu').onclick = () => toggleMenu();
 $('#bAuto').onclick = () => setAuto(!auto);
+$('#pbody').addEventListener('scroll', updateMore, { passive: true });
+$('#more').onclick = () => { const pb = $('#pbody'); pb.scrollBy({ top: pb.clientHeight * 0.7, behavior: 'smooth' }); };
 (() => { // per-slide scrubber
   const s = $('#scrub'); let drag = false;
   const at = e => { const r = s.getBoundingClientRect(), sc = ST.scenes[cur]; if (sc) seekLocal(clamp((e.clientX - r.left) / r.width, 0, 1) * sc.dur); };
@@ -553,8 +556,8 @@ buildMenu(); setPlay(false);
 
 map.on('load', () => {
   buildLayers(); buildTimeline(); updatePadding();
-  addEventListener('resize', () => { buildTimeline(); updatePadding(); });
-  $('#attrib').innerHTML = Object.values(map.getStyle().sources).map(s => s.attribution).filter(Boolean).join(' · ');
+  addEventListener('resize', () => { buildTimeline(); updatePadding(); updateMore(); });
+  $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021, 2024) · Esri, Maxar, Earthstar Geographics · NASA Black Marble / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
   const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
   if (hi >= 0) seek(ST.scenes[hi].start + 0.001);
   if (qs.has('t')) seek(+qs.get('t'));
