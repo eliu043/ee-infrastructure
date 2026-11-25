@@ -201,7 +201,7 @@ function updateCallouts(tl) {
 /* ---------- timeline (scene 05) ---------- */
 const PW = D.power;
 const T0 = dnum('2022-03-01'), T1 = dnum('2026-11-30');
-let TW = 1000; const tx = n => 150 + (n - T0) / (T1 - T0) * (TW - 170);
+let TW = 1000, TX0 = 150, TX1 = 980; const tx = n => TX0 + (n - T0) / (T1 - T0) * (TX1 - TX0);
 const events = [];
 PW.context.forEach(e => events.push({ d: dnum(e.date), cls: 'ctx', t: e.label, s: '', zones: [] }));
 PW.loops.forEach(e => events.push({ d: dnum(e.start), cls: 'loss', t: `Complete loss of off-site power${e.n ? ' #' + e.n : ''}`, s: e.note, zones: e.zones || [], loss: e }));
@@ -210,19 +210,29 @@ PW.ceasefires.forEach(e => events.push({ d: dnum(e.start), cls: 'repair', t: `Ce
 PW.grid_damage.forEach(e => events.push({ d: dnum(e.date), cls: 'strike', t: e.label, s: e.line, zones: e.zones || [] }));
 events.sort((a, b) => a.d - b.d);
 function buildTimeline() {
-  const svg = $('#timeline svg'); TW = Math.max(600, $('#timeline svg').clientWidth); svg.setAttribute('viewBox', `0 0 ${TW} 132`); let h = '';
-  for (let y = 2022; y <= 2026; y++) { const x = tx(dnum(`${y}-01-01`)); if (x > 150) h += `<line x1="${x}" x2="${x}" y1="8" y2="112" stroke="rgba(255,255,255,.12)"/>`; h += `<text x="${Math.max(x, 150) + 4}" y="14" fill="#9aa5a0" font-size="9">${y}</text>`; }
-  const lane = (y, label, col) => h += `<text x="0" y="${y + 4}" fill="${col}" font-size="9">${label}</text><line x1="150" x2="${TW - 20}" y1="${y}" y2="${y}" stroke="${col}" stroke-opacity=".35" stroke-width="5"/>`;
-  lane(32, '750 kV DNIPROVSKA', '#ff4d3a'); lane(52, '330 kV FEROSPLAVNA-1', '#ffb648');
-  h += `<text x="0" y="76" fill="#ff2d55" font-size="9">COMPLETE LOSS</text><text x="0" y="98" fill="#9dfcc4" font-size="9">CEASEFIRE REPAIR</text>`;
-  PW.line_outages.forEach(e => { const y = e.line.startsWith('Dnip') ? 32 : 52, a = tx(dnum(e.start)), b = tx(e.end ? dnum(e.end) : dnum('2026-11-24'));
-    h += `<rect x="${a}" y="${y - 5}" width="${Math.max(2, b - a)}" height="10" fill="#0b0d0e" stroke="${y === 32 ? '#ff4d3a' : '#ffb648'}" stroke-width=".8"/>`; });
-  PW.loops.forEach(e => { const x = tx(dnum(e.start)); h += `<line x1="${x}" x2="${x}" y1="64" y2="82" stroke="#ff2d55" stroke-width="1.6"/>`; });
-  PW.ceasefires.forEach(e => { const x = tx(dnum(e.start)); h += `<path d="M${x - 4} 102 L${x} 92 L${x + 4} 102Z" fill="#9dfcc4"/>`; });
-  PW.context.forEach(e => { const x = tx(dnum(e.date)); h += `<line x1="${x}" x2="${x}" y1="20" y2="112" stroke="#5cc8ff" stroke-dasharray="2 2"/><text x="${x + 4}" y="112" fill="#5cc8ff" font-size="8">${e.label.toUpperCase()}</text>`; });
-  h += `<text x="0" y="128" fill="#5d6763" font-size="8">Gap = no line outage dated · ${PW.gaps[0].split('.')[0]}</text>`;
-  h += `<g id="ph"><line x1="0" x2="0" y1="6" y2="112" stroke="#fff" stroke-width="1.2"/><circle cx="0" cy="6" r="3" fill="#fff"/></g>`;
+  const svg = $('#timeline svg'), w = Math.round(svg.getBoundingClientRect().width);
+  if (!w) return; // hidden: rebuilt when its slide shows it
+  TW = w; const c = TW < 560; // compact = inside the story panel (labels above each lane)
+  TX0 = c ? 1 : 150; TX1 = TW - (c ? 5 : 20);
+  const Y = c ? { h: 120, yr: 9, top: 3, l1: [19, 27], l2: [41, 49], lo: [63, 67, 79], re: [91, 95, 103], ctx: [12, 106, 117], lx: TX0, fs: 8 }
+              : { h: 118, yr: 14, top: 6, l1: [36, 32], l2: [56, 52], lo: [76, 64, 82], re: [98, 92, 102], ctx: [20, 112, 112], lx: 0, fs: 9 };
+  svg.setAttribute('viewBox', `0 0 ${TW} ${Y.h}`); svg.style.height = Y.h + 'px';
+  let h = '';
+  for (let y = 2022; y <= 2026; y++) { const x = tx(dnum(`${y}-01-01`)); if (x > TX0) h += `<line x1="${x}" x2="${x}" y1="${Y.top}" y2="${Y.ctx[1]}" stroke="rgba(255,255,255,.12)"/>`; h += `<text x="${Math.max(x, TX0) + 3}" y="${Y.yr}" fill="#9aa5a0" font-size="${Y.fs}">${y}</text>`; }
+  const label = (y, t, col) => h += `<text x="${Y.lx}" y="${y}" fill="${col}" font-size="${Y.fs}">${t}</text>`;
+  const lane = (l, t, col) => { label(l[0], t, col); h += `<line x1="${TX0}" x2="${TX1}" y1="${l[1]}" y2="${l[1]}" stroke="${col}" stroke-opacity=".35" stroke-width="${c ? 4 : 5}"/>`; };
+  lane(Y.l1, '750 kV DNIPROVSKA', '#ff4d3a'); lane(Y.l2, '330 kV FEROSPLAVNA-1', '#ffb648');
+  label(Y.lo[0], 'COMPLETE LOSS', '#ff2d55'); label(Y.re[0], 'CEASEFIRE REPAIR', '#9dfcc4');
+  const bh = c ? 8 : 10;
+  PW.line_outages.forEach(e => { const dn = e.line.startsWith('Dnip'), y = dn ? Y.l1[1] : Y.l2[1], a = tx(dnum(e.start)), b = tx(e.end ? dnum(e.end) : dnum('2026-11-24'));
+    h += `<rect x="${a}" y="${y - bh / 2}" width="${Math.max(2, b - a)}" height="${bh}" fill="#0b0d0e" stroke="${dn ? '#ff4d3a' : '#ffb648'}" stroke-width=".8"/>`; });
+  PW.loops.forEach(e => { const x = tx(dnum(e.start)); h += `<line x1="${x}" x2="${x}" y1="${Y.lo[1]}" y2="${Y.lo[2]}" stroke="#ff2d55" stroke-width="${c ? 1.3 : 1.6}"/>`; });
+  PW.ceasefires.forEach(e => { const x = tx(dnum(e.start)), k = c ? 3.5 : 4; h += `<path d="M${x - k} ${Y.re[2]} L${x} ${Y.re[1]} L${x + k} ${Y.re[2]}Z" fill="#9dfcc4"/>`; });
+  PW.context.forEach(e => { const x = tx(dnum(e.date)), t = e.label.toUpperCase(), right = x + 4 + t.length * Y.fs * 0.6 > TW;
+    h += `<line x1="${x}" x2="${x}" y1="${Y.ctx[0]}" y2="${Y.ctx[1]}" stroke="#5cc8ff" stroke-dasharray="2 2"/><text x="${right ? x - 4 : x + 4}" y="${Y.ctx[2]}" text-anchor="${right ? 'end' : 'start'}" fill="#5cc8ff" font-size="${Y.fs}">${t}</text>`; });
+  h += `<g id="ph"><line x1="0" x2="0" y1="${Y.top}" y2="${Y.ctx[1]}" stroke="#fff" stroke-width="1.2"/><circle cx="0" cy="${Y.top}" r="${c ? 2.5 : 3}" fill="#fff"/></g>`;
   svg.innerHTML = h;
+  $('#timeline .tnote').textContent = `Gap = no line outage dated · ${PW.gaps[0].split('.')[0]}`;
 }
 const isOut = (line, n) => PW.line_outages.some(e => e.line === line && n >= dnum(e.start) && n <= (e.end ? dnum(e.end) + 0.99 : Infinity));
 const lossAt = n => PW.loops.find(e => n >= dnum(e.start) && n <= dnum(e.end) + 0.99);
@@ -313,13 +323,14 @@ function slideHTML(sc, dir) {
   const cls = `slide${dir < 0 ? ' back' : ''}`;
   if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div></div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
-    <p class="lede">${esc(sc.vo)}</p><p class="src">${esc(CREDITS)}</p></div>`;
+    <p class="lede">${esc(sc.vo)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
-    <p class="lede">${esc(sc.vo)}</p>${sc.sources ? `<p class="src">${esc(sc.sources)}</p>` : ''}</div>`;
+    <p class="lede">${esc(sc.vo)}</p></div>`;
 }
 function renderPanel(sc, dir) {
   const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
+  $('#psrc').textContent = sc.endCard ? CREDITS : sc.titleCard ? '' : (sc.sources || '');
   $('#pg').textContent = `${Math.max(1, cur - FIRST + 1)} / ${N - FIRST}`;
   $('#bBack').disabled = cur <= FIRST;
   $('#menu').querySelectorAll('a').forEach(a => { const on = +a.dataset.i === cur; a.classList.toggle('cur', on); on ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current'); });
@@ -332,6 +343,13 @@ function buildMenu() {
 function toggleMenu(v) {
   const on = v ?? !$('#panel').classList.contains('menu');
   $('#panel').classList.toggle('menu', on); $('#bMenu').classList.toggle('on', on); $('#bMenu').setAttribute('aria-expanded', on);
+}
+
+/* ---------- data widgets: inside the story panel, or on the map in record mode ---------- */
+function placeData() {
+  if (isRec()) { $('#rightcol').append($('#counter'), $('#ucdpCount'), $('#log')); document.body.insertBefore($('#timeline'), $('#readout')); }
+  else $('#pdata').append($('#counter'), $('#ucdpCount'), $('#timeline'), $('#log'));
+  buildTimeline();
 }
 
 /* ---------- map padding: frame the story beside the panel (constant, so it never jumps) ---------- */
@@ -396,9 +414,10 @@ function enter(i, snap) {
   setStamp(sc.stamp || '');
   $('#cap').textContent = sc.vo || '';
   $('#counter').style.opacity = 0; $('#ucdpCount').style.opacity = 0;
-  $('#counter').style.display = sc.id === 'dependency' ? '' : 'none';
-  $('#ucdpCount').style.display = sc.id === 'frontier' ? '' : 'none';
-  $('#log').style.display = sc.layers.log ? '' : 'none';
+  const show = { counter: sc.id === 'dependency', ucdpCount: sc.id === 'frontier', timeline: !!sc.layers.timeline, log: !!sc.layers.log };
+  Object.entries(show).forEach(([id, v]) => { $('#' + id).style.display = v ? '' : 'none'; });
+  $('#pdata').classList.toggle('on', Object.values(show).some(Boolean));
+  if (show.timeline) buildTimeline();
   if (location.hash.slice(1) !== sc.id) history.replaceState(null, '', location.pathname + location.search + '#' + sc.id);
 }
 function render(dt) {
@@ -504,7 +523,7 @@ function seekLocal(t, play) { // within the current slide
 function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; first = true; } // hard cut (URL ?t= and test hook)
 function togglePlay() { if (held) seekLocal(0, true); else setPlay(!playing); }
 function setAuto(v) { auto = v; if (auto && held && cur < N - 1) next(); }
-function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); updatePadding(); }
+function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); placeData(); updatePadding(); }
 
 $('#bPlay').onclick = togglePlay;
 $('#bBack').onclick = back; $('#bNext').onclick = next;
@@ -541,7 +560,7 @@ if (qs.has('rec')) { document.body.classList.add('rec'); setAuto(true); }
 buildMenu(); setPlay(false);
 
 map.on('load', () => {
-  buildLayers(); buildTimeline(); updatePadding();
+  buildLayers(); placeData(); updatePadding();
   addEventListener('resize', () => { buildTimeline(); updatePadding(); });
   $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021, 2024) · Esri, Maxar, Earthstar Geographics · NASA Black Marble / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
   const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
