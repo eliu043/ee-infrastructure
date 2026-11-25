@@ -245,7 +245,14 @@ function updateCallouts(tl) {
 /* ---------- timeline (scene 05) ---------- */
 const PW = D.power;
 const T0 = dnum('2022-03-01'), T1 = dnum('2026-11-30');
-let TW = 1000, TX0 = 150, TX1 = 980; const tx = n => TX0 + (n - T0) / (T1 - T0) * (TX1 - TX0);
+// broken axis: nothing is dated between the end of the Mar–Jul 2023 Ferosplavna outage and May 2025,
+// so that stretch is squeezed into a narrow zigzag and the busy years get the width
+const B0 = dnum('2023-07-15'), B1 = dnum('2025-04-15');
+let TW = 1000, TX0 = 150, TX1 = 980, GAP = 16;
+const tx = n => { const k = (TX1 - TX0 - GAP) / ((B0 - T0) + (T1 - B1));
+  if (n <= B0) return TX0 + (n - T0) * k;
+  if (n >= B1) return TX0 + (B0 - T0) * k + GAP + (n - B1) * k;
+  return TX0 + (B0 - T0) * k + (n - B0) / (B1 - B0) * GAP; };
 const events = [];
 PW.context.forEach(e => events.push({ d: dnum(e.date), cls: 'ctx', t: e.label, s: '', zones: [] }));
 PW.loops.forEach(e => events.push({ d: dnum(e.start), cls: 'loss', t: `Complete loss of off-site power${e.n ? ' #' + e.n : ''}`, s: e.note, zones: e.zones || [], loss: e }));
@@ -261,22 +268,31 @@ function buildTimeline() {
   const Y = c ? { h: 120, yr: 9, top: 3, l1: [19, 27], l2: [41, 49], lo: [63, 67, 79], re: [91, 95, 103], ctx: [12, 106, 117], lx: TX0, fs: 8 }
               : { h: 118, yr: 14, top: 6, l1: [36, 32], l2: [56, 52], lo: [76, 64, 82], re: [98, 92, 102], ctx: [20, 112, 112], lx: 0, fs: 9 };
   svg.setAttribute('viewBox', `0 0 ${TW} ${Y.h}`); svg.style.height = Y.h + 'px';
+  GAP = c ? 16 : 22; const g0 = tx(B0), g1 = tx(B1);
+  const segs = (a, b) => b <= g0 || a >= g1 ? [[a, b]] : [[a, Math.min(b, g0)], [Math.max(a, g1), b]].filter(([p, q]) => q > p); // split across the break
   let h = '';
-  for (let y = 2022; y <= 2026; y++) { const x = tx(dnum(`${y}-01-01`)); if (x > TX0) h += `<line x1="${x}" x2="${x}" y1="${Y.top}" y2="${Y.ctx[1]}" stroke="rgba(255,255,255,.12)"/>`; h += `<text x="${Math.max(x, TX0) + 3}" y="${Y.yr}" fill="#9aa5a0" font-size="${Y.fs}">${y}</text>`; }
+  for (let y = 2022; y <= 2026; y++) { const d = dnum(`${y}-01-01`); if (d > B0 && d < B1) continue; const x = tx(d);
+    if (x > TX0) h += `<line x1="${x}" x2="${x}" y1="${Y.top}" y2="${Y.ctx[1]}" stroke="rgba(255,255,255,.12)"/>`; h += `<text x="${Math.max(x, TX0) + 3}" y="${Y.yr}" fill="#9aa5a0" font-size="${Y.fs}">${y}</text>`; }
+  h += `<text x="${g1 + 3}" y="${Y.yr}" fill="#9aa5a0" font-size="${Y.fs}">2025</text>`;
   const label = (y, t, col) => h += `<text x="${Y.lx}" y="${y}" fill="${col}" font-size="${Y.fs}">${t}</text>`;
-  const lane = (l, t, col) => { label(l[0], t, col); h += `<line x1="${TX0}" x2="${TX1}" y1="${l[1]}" y2="${l[1]}" stroke="${col}" stroke-opacity=".35" stroke-width="${c ? 4 : 5}"/>`; };
+  const lane = (l, t, col) => { label(l[0], t, col); segs(TX0, TX1).forEach(([p, q]) => h += `<line x1="${p}" x2="${q}" y1="${l[1]}" y2="${l[1]}" stroke="${col}" stroke-opacity=".35" stroke-width="${c ? 4 : 5}"/>`); };
   lane(Y.l1, '750 kV DNIPROVSKA', '#ff4d3a'); lane(Y.l2, '330 kV FEROSPLAVNA-1', '#ffb648');
   label(Y.lo[0], 'COMPLETE LOSS', '#ff2d55'); label(Y.re[0], 'CEASEFIRE REPAIR', '#9dfcc4');
   const bh = c ? 8 : 10;
-  PW.line_outages.forEach(e => { const dn = e.line.startsWith('Dnip'), y = dn ? Y.l1[1] : Y.l2[1], a = tx(dnum(e.start)), b = tx(e.end ? dnum(e.end) : dnum('2026-11-24'));
-    h += `<rect x="${a}" y="${y - bh / 2}" width="${Math.max(2, b - a)}" height="${bh}" fill="#0b0d0e" stroke="${dn ? '#ff4d3a' : '#ffb648'}" stroke-width=".8"/>`; });
+  PW.line_outages.forEach(e => { const dn = e.line.startsWith('Dnip'), y = dn ? Y.l1[1] : Y.l2[1], col = dn ? '#ff4d3a' : '#ffb648';
+    segs(tx(dnum(e.start)), tx(e.end ? dnum(e.end) : dnum('2026-11-24'))).forEach(([a, b]) =>
+      h += `<rect x="${a}" y="${y - bh / 2}" width="${Math.max(2, b - a)}" height="${bh}" fill="#0b0d0e" stroke="${col}" stroke-width=".8"/>`); });
   PW.loops.forEach(e => { const x = tx(dnum(e.start)); h += `<line x1="${x}" x2="${x}" y1="${Y.lo[1]}" y2="${Y.lo[2]}" stroke="#ff2d55" stroke-width="${c ? 1.3 : 1.6}"/>`; });
   PW.ceasefires.forEach(e => { const x = tx(dnum(e.start)), k = c ? 3.5 : 4; h += `<path d="M${x - k} ${Y.re[2]} L${x} ${Y.re[1]} L${x + k} ${Y.re[2]}Z" fill="#9dfcc4"/>`; });
+  // the break: two parallel zigzags across every lane
+  const zig = x => { let d = `M${x} ${Y.top}`; for (let y = Y.top, i = 0; y < Y.ctx[1]; y += 4, i++) d += ` L${x + (i % 2 ? -2 : 2)} ${Math.min(y + 4, Y.ctx[1])}`; return d; };
+  h += `<path d="${zig(g0 + 4)}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width=".9"/><path d="${zig(g1 - 4)}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width=".9"/>`;
   PW.context.forEach(e => { const x = tx(dnum(e.date)), t = e.label.toUpperCase(), right = x + 4 + t.length * Y.fs * 0.6 > TW;
     h += `<line x1="${x}" x2="${x}" y1="${Y.ctx[0]}" y2="${Y.ctx[1]}" stroke="#5cc8ff" stroke-dasharray="2 2"/><text x="${right ? x - 4 : x + 4}" y="${Y.ctx[2]}" text-anchor="${right ? 'end' : 'start'}" fill="#5cc8ff" font-size="${Y.fs}">${t}</text>`; });
   h += `<g id="ph"><line x1="0" x2="0" y1="${Y.top}" y2="${Y.ctx[1]}" stroke="#fff" stroke-width="1.2"/><circle cx="0" cy="${Y.top}" r="${c ? 2.5 : 3}" fill="#fff"/></g>`;
   svg.innerHTML = h;
-  $('#timeline .tnote').textContent = `Gap = no line outage dated · ${PW.gaps[0].split('.')[0]}`;
+  const total = (PW.gaps[0].match(/reaches (\d+)/) || [])[1];
+  $('#timeline .tnote').textContent = `Jul 2023 – Apr 2025 compressed${total ? ` · ${PW.loops.length} of ${total} losses dated` : ''}`;
 }
 const isOut = (line, n) => PW.line_outages.some(e => e.line === line && n >= dnum(e.start) && n <= (e.end ? dnum(e.end) + 0.99 : Infinity));
 const lossAt = n => PW.loops.find(e => n >= dnum(e.start) && n <= dnum(e.end) + 0.99);
@@ -381,20 +397,29 @@ function buildLegend(sc) {
     .map(([, s, l]) => `<div class="row"><span class="sw">${s}</span>${esc(l)}</div>`).join('');
 }
 
+/* ---------- bottom-left credits: this slide's data source, then the base map ---------- */
+const BASE_CREDIT = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021–2025) · Esri, Maxar, Earthstar Geographics · NASA Black Marble, VIIRS NOAA-20 / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
+// fallback when a scene has no short credit: source names only, without parentheses or notes
+const condense = s => (s || '').split('·').map(p => p.replace(/\([^)]*\)/g, '').replace(/,\s*\d{4}.*$/, '').trim()).filter(p => p && !/^imagery/i.test(p)).slice(0, 3).join(' · ');
+function setAttrib(sc) {
+  const d = sc.endCard ? '' : (sc.credit != null ? sc.credit : condense(sc.sources));
+  const el = $('#attrib'); el.innerHTML = (d ? `<b>${esc(d)}</b> · ` : '') + BASE_CREDIT; el.title = el.textContent;
+}
+
 /* ---------- story panel ---------- */
 function slideHTML(sc, dir) {
   const cls = `slide${dir < 0 ? ' back' : ''}`;
   if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>${sc.vo ? `
     <div id="dateline" class="dateline none"></div><p class="lede">${esc(sc.vo)}</p>` : ''}</div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
-    <p class="lede">${esc(sc.vo)}</p></div>`;
+    <p class="lede">${esc(sc.vo)}</p><p class="src">Sources · ${esc(CREDITS)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
     <p class="lede">${esc(sc.vo)}</p></div>`;
 }
 function renderPanel(sc, dir) {
   const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
-  $('#psrc').textContent = sc.endCard ? CREDITS : (sc.sources || '');
+  setAttrib(sc);
   $('#pg').textContent = `${Math.max(1, cur - FIRST + 1)} / ${N - FIRST}`;
   $('#bBack').disabled = cur <= FIRST;
   $('#menu').querySelectorAll('a').forEach(a => { const on = +a.dataset.i === cur; a.classList.toggle('cur', on); on ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current'); });
@@ -649,7 +674,6 @@ buildMenu(); setPlay(false);
 map.on('load', () => {
   buildLayers(); placeData(); updatePadding();
   addEventListener('resize', () => { buildTimeline(); updatePadding(); });
-  $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021–2025) · Esri, Maxar, Earthstar Geographics · NASA Black Marble, VIIRS NOAA-20 / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
   const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
   if (hi >= FIRST) seek(ST.scenes[hi].start + 0.001);
   if (qs.has('t')) seek(+qs.get('t'));

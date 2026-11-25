@@ -7,6 +7,7 @@
    stamps: [[t, text], ...] changes the top-right stamp during a scene.
    routeKinds: which analysed routes to draw ('diesel', 'crew-ua', 'crew-ru').
    titleCard: true or {t0, t1}; capUntil: hide the caption after this many seconds.
+   sources: full citation for the scene · credit: the short version shown bottom-left while the slide is on.
    Total runtime = sum of durations (currently 7:00). Keep each scene's first camera keyframe equal
    to the previous scene's last one, or the cut will jump. Bearings turn the short way round. */
 
@@ -59,6 +60,7 @@ window.STORY = {
       { t: 18, d: 14, ll: P.kyiv, title: 'Kyiv · 31 January 2026', sub: 'Blackout for a few hours', h: 90 },
     ],
     sources: 'VIIRS Day/Night Band, NOAA-20 (NASA GIBS), 24 Jan 2026, ~01:30 local. The fade to dark is an illustration: the 31 Jan pass is moonlit snow and cannot show the outage',
+    credit: 'Night pass: VIIRS NOAA-20, 24 Jan 2026 · darkening is illustrative',   // short line for the bottom-left credits
   },
   /* HOSTAGE · FLIGHT TO ZNPP + TITLE ────────────── */
   {
@@ -77,6 +79,7 @@ window.STORY = {
       { t: 6, d: 9, ll: P.znpp, title: 'Zaporizhzhia NPP', sub: 'Occupied since March 2022', h: 70 },
     ],
     sources: 'Night lights: NASA Black Marble (2016, pre-war baseline)',
+    credit: 'Night lights: NASA Black Marble 2016',   // short line for the bottom-left credits
   },
   /* 01 ─────────────────────────────────────────── */
   {
@@ -98,6 +101,7 @@ window.STORY = {
       { t: 21, d: 8, ll: [34.58, 47.535], title: '750 kV / 330 kV export lines', sub: 'Roughly a fifth of national generation', h: 60, side: 'l' },
     ],
     sources: 'Lines: OpenStreetMap (power=line, ≥150 kV) · Imagery: Sentinel-2 cloudless 2021, EOX',
+    credit: 'Lines: OpenStreetMap',   // short line for the bottom-left credits
   },
   /* 02 ─────────────────────────────────────────── */
   {
@@ -117,6 +121,7 @@ window.STORY = {
       { t: 14, d: 11, ll: [34.47, 47.535], title: 'Frontline', sub: 'Runs along the Dnipro / Kakhovka reservoir', h: 110, side: 'l' },
     ],
     sources: 'Reservoir outline: OSM, 2023-05-01 · Frontline drawn schematically along the river',
+    credit: 'Reservoir: OSM · frontline schematic',   // short line for the bottom-left credits
   },
   /* 03 ─────────────────────────────────────────── */
   {
@@ -164,6 +169,7 @@ window.STORY = {
       { t: 45, d: 9, ll: [34.556, 47.502], title: 'Pond and channels: 9.60 → 8.66 km²', sub: 'July 2022 → August 2025 · dam built in intake channel, 2025', h: 70, side: 'l' },
     ],
     sources: 'Imagery: Sentinel-2 cloudless 2021–2025 (EOX), Esri World Imagery · Wells: IAEA via NEI (Aug–Nov 2023) · Pond area: McKenzie Intelligence / Greenpeace Ukraine (Dec 2025) · Water bodies: OSM',
+    credit: 'Wells: IAEA via NEI · pond: McKenzie Intelligence / Greenpeace Ukraine · water: OSM',   // short line for the bottom-left credits
   },
   /* 05 ─────────────────────────────────────────── */
   {
@@ -181,6 +187,7 @@ window.STORY = {
       { t: 6, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Disconnected · waiting', h: 70, side: 'l' },
     ],
     sources: 'Dashed arrow is schematic — no planned route is shown',
+    credit: 'Arrow schematic: no planned route',   // short line for the bottom-left credits
   },
   /* 06 ─────────────────────────────────────────── */
   {
@@ -214,6 +221,7 @@ window.STORY = {
       { t: 60.4, d: 3.6, ll: P.tpp, title: 'Z2 · switchyard', sub: 'Backup transformer destroyed again, Nov 2026', h: 70 },
     ],
     sources: 'Outages: IAEA updates via WNA (compiled 2026-11-19) · Damage zones: our reading of IAEA locations (approximate) · Crew routes: OSM shortest road distance',
+    credit: 'Outages: IAEA via WNA · damage zones approximate · crew routes: OSM',   // short line for the bottom-left credits
   },
   /* 07 ─────────────────────────────────────────── */
   {
@@ -256,6 +264,7 @@ window.STORY = {
       { t: 30, d: 9.1, ll: [34.78, 47.42], title: 'Last 30 km within 20 km of the river front', sub: 'Shortest route, OSM network', h: 60, side: 'r' },
     ],
     sources: 'Blackouts: IAEA count · Roads & rail: OpenStreetMap, 24 Nov 2026 · Events: UCDP GED 26.1 + candidate 2026, fatal events only · Routes are shortest road distance, not observed convoys',
+    credit: 'Blackouts: IAEA · roads & rail: OSM · events: UCDP GED · routes modelled, not observed',   // short line for the bottom-left credits
   },
   /* 09 ─────────────────────────────────────────── */
   {
@@ -276,6 +285,7 @@ window.STORY = {
       { t: 14.3, d: 17.9, ll: P.znpp, title: 'ZNPP', sub: 'Fortified perimeter · trench lines to digitize', h: 60, side: 'l' },
     ],
     sources: 'Events: UCDP GED, fatal events with precise location (n = 829) · fatal events only, an undercount',
+    credit: 'Events: UCDP GED (fatal only, an undercount)',   // short line for the bottom-left credits
   },
   /* 10 ─────────────────────────────────────────── */
   {
@@ -297,6 +307,7 @@ window.STORY = {
       { t: 15, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50, side: 'l' },
     ],
     sources: 'Lights dimmed for illustration — baseline NASA Black Marble 2016; not a measurement of 2026 outages',
+    credit: 'Dimming illustrative · NASA Black Marble 2016',   // short line for the bottom-left credits
   },
   /* END ─────────────────────────────────────────── */
   {
