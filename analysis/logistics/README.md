@@ -24,6 +24,9 @@
 - **Rail:** OSM has no active (`railway=rail`) line reaching the plant. The Enerhodar branch from Kakhovske More station (near Dniprorudne) is tagged `railway=disused` (`rail-disused-branch.geojson`). The nearest connected main-line track lies ~46 km south-east. On the mapped network, the last leg to the plant is by road. OSM tagging may lag reality.
 - **Recorded violence along the road route:** UCDP GED 26.1 + 2026 candidate events give 45 fatal events (best estimate 129 deaths) within 2 km of the Melitopol → ZNPP road route since 24 Feb 2022 (2022: 10, 2023: 18, 2024: 6, 2025: 5, 2026: 6). 30 of the 45 are geolocated to Melitopol town itself. UCDP counts only lethal events, often at settlement centroids, so this is not a count of strikes on roads.
 
+## Wells (24 Nov 2026)
+`wells-zone.geojson` is the reported well area: a 5–60 m band around the convex hull of the OSM spray-pond outlines (14 polygons; McKenzie counts 12 ponds). It is based on IAEA reporting via NEI that wells are "close to" and "around the perimeter of the sprinkler ponds" (Aug–Nov 2023). There are 11 wells, ~250 m³/h (Nov 2023). No coordinates are published. Esri Wayback before/after imagery (Dec 2022 vs Feb 2024 releases) did not resolve individual wellheads, so no points are mapped.
+
 ## Limits
 Distance-based shortest paths, not travel time or observed convoys. No checkpoints, damaged bridges, mines or closures. The river-front proxy is the 2023-05-01 reservoir outline; the eastern land front is not modelled. Endpoints snap to the nearest major/tertiary road (≤4.1 km; ZNPP snaps 3.8 km to its access road). Road refs on the left bank are as tagged in OSM, including occupation-era numbering.
 

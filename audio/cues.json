@@ -43,41 +43,41 @@
    "id": "water",
    "start": 147.6,
    "end": 164.47,
-   "limit": 187.6,
+   "limit": 195.6,
    "fits": true
   },
   {
    "id": "notyet",
-   "start": 193.6,
-   "end": 199.54,
-   "limit": 202.6,
+   "start": 201.6,
+   "end": 207.54,
+   "limit": 210.6,
    "fits": true
   },
   {
    "id": "repair",
-   "start": 208.6,
-   "end": 220.97,
-   "limit": 266.6,
+   "start": 216.6,
+   "end": 228.97,
+   "limit": 274.6,
    "fits": true
   },
   {
    "id": "dependency",
-   "start": 272.6,
-   "end": 284.82,
-   "limit": 298.6,
+   "start": 280.6,
+   "end": 292.82,
+   "limit": 306.6,
    "fits": true
   },
   {
    "id": "supply",
-   "start": 304.6,
-   "end": 324.49,
-   "limit": 342.6,
+   "start": 312.6,
+   "end": 332.49,
+   "limit": 346.6,
    "fits": true
   },
   {
    "id": "frontier",
-   "start": 348.6,
-   "end": 361.92,
+   "start": 352.6,
+   "end": 365.92,
    "limit": 380.6,
    "fits": true
   },
