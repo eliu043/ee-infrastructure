@@ -40,17 +40,23 @@ const map = new maplibregl.Map({
   style: {
     version: 8,
     sources: {
-      s2021: s2(2021), s2024: s2(2024),
+      s2021: s2(2021), s2023: s2(2023), s2024: s2(2024), s2025: s2(2025),
       esri: { type: 'raster', tileSize: 256, maxzoom: 18, tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' },
       lights: { type: 'raster', tileSize: 256, maxzoom: 8, tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png'], attribution: 'NASA Black Marble 2016 / GIBS' },
       dem: dem(), demhs: dem(),
+      ...Object.fromEntries(['2026-01-24'].map(d => ['dnb' + d.replace(/-/g, ''), { type: 'raster', tileSize: 256, maxzoom: 8,
+        tiles: [`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance/default/${d}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`],
+        attribution: 'VIIRS Day/Night Band, NOAA-20, NASA GIBS' }])),
     },
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': '#07090a' } },
       { id: 's2021', type: 'raster', source: 's2021', paint: { ...grade } },
+      { id: 's2023', type: 'raster', source: 's2023', paint: { ...grade } },
       { id: 's2024', type: 'raster', source: 's2024', paint: { ...grade } },
+      { id: 's2025', type: 'raster', source: 's2025', paint: { ...grade } },
       { id: 'esri', type: 'raster', source: 'esri', paint: { ...grade, 'raster-saturation': -0.3, 'raster-brightness-max': 0.9 } },
       { id: 'hillshade', type: 'hillshade', source: 'demhs', paint: { 'hillshade-exaggeration': 0, 'hillshade-shadow-color': '#000', 'hillshade-highlight-color': '#fff', 'hillshade-accent-color': '#000', 'hillshade-illumination-direction': 315 } },
+      { id: 'dnb20260124', type: 'raster', source: 'dnb20260124', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.55, 'raster-saturation': -1 } },
       { id: 'lights', type: 'raster', source: 'lights', paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.2 } },
     ],
   },
@@ -68,6 +74,10 @@ D.znpp.features.forEach(f => parts(f.geometry).forEach(c => {
   const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + km(pts[i - 1], pts[i]));
   if (cum[cum.length - 1] > 0.3) flowParts.push({ line: f.properties.line, pts, cum, len: cum[cum.length - 1] });
 }));
+const routeParts = [];
+(D.routes ? D.routes.features : []).forEach(f => { const pts = f.geometry.coordinates; if (pts.length < 2) return;
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + km(pts[i - 1], pts[i]));
+  routeParts.push({ kind: f.properties.kind, pts, cum, len: cum[cum.length - 1] }); });
 function along(fp, d) { let i = 1; while (i < fp.cum.length - 1 && fp.cum[i] < d) i++; const u = (d - fp.cum[i - 1]) / ((fp.cum[i] - fp.cum[i - 1]) || 1);
   return [lerp(fp.pts[i - 1][0], fp.pts[i][0], u), lerp(fp.pts[i - 1][1], fp.pts[i][1], u)]; }
 const FC = f => ({ type: 'FeatureCollection', features: f });
@@ -108,6 +118,13 @@ function buildLayers() {
   map.addSource('particles', { type: 'geojson', data: FC([]) });
   map.addSource('plant', { type: 'geojson', data: FC([{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: P.znpp } }]) });
   map.addSource('proposed', { type: 'geojson', data: proposedLine });
+  map.addSource('roads', { type: 'geojson', data: D.roads || FC([]) });
+  map.addSource('routes', { type: 'geojson', data: D.routes || FC([]) });
+  map.addSource('trucks', { type: 'geojson', data: FC([]) });
+  map.addSource('water', { type: 'geojson', data: D.water || FC([]) });
+  map.addSource('railMain', { type: 'geojson', data: D.railMain || FC([]) });
+  map.addSource('railDisused', { type: 'geojson', data: D.railDisused || FC([]) });
+  map.addSource('supplyEvents', { type: 'geojson', data: D.supplyEvents || FC([]) });
   map.addSource('arrow', { type: 'geojson', data: arrowHead });
   map.addSource('trenches', { type: 'geojson', data: X.trenches || FC([]) });
   map.addSource('artillery', { type: 'geojson', data: X.artillery || FC([]) });
@@ -129,6 +146,16 @@ function buildLayers() {
   add({ id: 'znpp-core', type: 'line', source: 'znpp', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['match', ['get', 'line'], 'Dniprovska 750 kV', '#ff6a55', '#ffc56a'], 'line-width': 2.6, 'line-opacity': 0 } });
   add({ id: 'znpp-dead', type: 'line', source: 'znpp', paint: { 'line-color': '#7b8682', 'line-width': 1.4, 'line-dasharray': [1, 2], 'line-opacity': 0 } });
   add({ id: 'particles', type: 'circle', source: 'particles', paint: { 'circle-radius': 2.6, 'circle-blur': 0.4, 'circle-color': ['match', ['get', 'line'], 'Dniprovska 750 kV', '#ffd1c8', '#fff1cf'], 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'water-fill', type: 'fill', source: 'water', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': '#5cc8ff', 'fill-opacity': 0 } });
+  add({ id: 'water-line', type: 'line', source: 'water', paint: { 'line-color': '#8fdcff', 'line-width': ['match', ['get', 'k'], 'pond', 2.2, 1.6], 'line-opacity': 0 } });
+  add({ id: 'roads', type: 'line', source: 'roads', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#e8ece9', 'line-width': ['match', ['get', 'hw'], 'motorway', 1.4, 'trunk', 1.2, 0.7], 'line-opacity': 0 } });
+  const rc = ['match', ['get', 'kind'], 'diesel', '#ffd166', 'crew-ua', '#9dfcc4', 'crew-ru', '#ff8a7a', '#ffffff'];
+  add({ id: 'routes-glow', type: 'line', source: 'routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': rc, 'line-width': 12, 'line-blur': 8, 'line-opacity': 0 } });
+  add({ id: 'routes', type: 'line', source: 'routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': rc, 'line-width': 2.6, 'line-opacity': 0 } });
+  add({ id: 'trucks', type: 'circle', source: 'trucks', paint: { 'circle-radius': 3.2, 'circle-color': '#fff', 'circle-stroke-width': 1.5, 'circle-stroke-color': rc, 'circle-opacity': 0, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'rail-main', type: 'line', source: 'railMain', paint: { 'line-color': '#c9d1cd', 'line-width': ['match', ['get', 'u'], 'main', 1.6, 1.0], 'line-dasharray': [1, 1], 'line-opacity': 0 } });
+  add({ id: 'rail-disused', type: 'line', source: 'railDisused', paint: { 'line-color': '#ff6b5a', 'line-width': 2, 'line-dasharray': [1.5, 2], 'line-opacity': 0 } });
+  add({ id: 'supply-events', type: 'circle', source: 'supplyEvents', paint: { 'circle-color': '#ff3b2f', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3.5, 12, 7], 'circle-blur': 0.2, 'circle-opacity': 0, 'circle-stroke-width': 1, 'circle-stroke-color': '#ffd0c8', 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'proposed', type: 'line', source: 'proposed', paint: { 'line-color': '#ffffff', 'line-width': 2, 'line-dasharray': [2, 2.5], 'line-opacity': 0 } });
   add({ id: 'arrow', type: 'fill', source: 'arrow', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0 } });
   add({ id: 'ucdp-glow', type: 'circle', source: 'ucdp', paint: { 'circle-color': '#ff5a45', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 8, 12, 22], 'circle-blur': 1, 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
@@ -140,8 +167,8 @@ function buildLayers() {
   add({ id: 'plant-ring', type: 'circle', source: 'plant', paint: { 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.4, 'circle-radius': 12, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'plant-dot', type: 'circle', source: 'plant', paint: { 'circle-color': '#fff', 'circle-radius': 4, 'circle-blur': 0.3, 'circle-opacity': 0 } });
 
-  reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
-  reg('lights', pp('lights', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
+  reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('s2023', pp('s2023', 'raster-opacity')); reg('s2025', pp('s2025', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
+  reg('lights', pp('lights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
   reg('reservoir', pp('res-fill', 'fill-opacity', 0.35));
   reg('frontline', pp('front-fill', 'fill-opacity', 0.12), pp('front-line', 'line-opacity', 0.75));
   reg('canals', pp('canals', 'line-opacity'));
@@ -152,6 +179,13 @@ function buildLayers() {
   reg('zones', pp('zones-line', 'line-opacity', 1), pp('zones-fill', 'fill-opacity', 1));
   L.zones.set = v => { map.setPaintProperty('zones-line', 'line-opacity', ['*', 0.9 * v, ['min', 1, ['coalesce', ['feature-state', 'f'], 0]]]); map.setPaintProperty('zones-fill', 'fill-opacity', ['*', 0.35 * v, ['coalesce', ['feature-state', 'f'], 0]]); };
   reg('proposed', pp('proposed', 'line-opacity'), pp('arrow', 'fill-opacity'));
+  reg('rail', pp('rail-main', 'line-opacity', 0.7));
+  reg('railDisused', pp('rail-disused', 'line-opacity'));
+  reg('supplyEvents', pp('supply-events', 'circle-opacity', 0.9), pp('supply-events', 'circle-stroke-opacity', 0.9));
+  reg('water', pp('water-fill', 'fill-opacity', 0.22), pp('water-line', 'line-opacity', 0.9));
+  reg('roads', pp('roads', 'line-opacity', 0.65));
+  reg('routes', pp('routes-glow', 'line-opacity', 0.45), pp('routes', 'line-opacity', 1));
+  reg('trucks', pp('trucks', 'circle-opacity'), pp('trucks', 'circle-stroke-opacity'));
   reg('ucdp', pp('ucdp', 'circle-opacity', 0.9), pp('ucdp', 'circle-stroke-opacity', 0.9), pp('stacks', 'fill-extrusion-opacity', 0.85));
   reg('plant', pp('plant-ring', 'circle-stroke-opacity'), pp('plant-dot', 'circle-opacity'));
   reg('beacon', () => {});
@@ -172,7 +206,8 @@ function cam(sc, t) {
     const w0 = Math.pow(2, -a.z), w1 = Math.pow(2, -b.z), w = Math.pow(2, -z);
     const s = Math.abs(w1 - w0) < 1e-9 ? u : (w - w0) / (w1 - w0);
     const x = lerp(mercX(a.c[0]), mercX(b.c[0]), s), y = lerp(mercY(a.c[1]), mercY(b.c[1]), s);
-    return { c: [unX(x), unY(y)], z, p: lerp(a.p, b.p, u), b: lerp(a.b, b.b, u) };
+    const db = ((b.b - a.b) % 360 + 540) % 360 - 180; // shortest turn, so 350° → 10° doesn't spin round
+    return { c: [unX(x), unY(y)], z, p: lerp(a.p, b.p, u), b: a.b + db * u };
   }
   return k[k.length - 1];
 }
@@ -270,12 +305,20 @@ function updateParticles(dt, dir, zoom) {
   flowParts.forEach(fp => { if (!lineState[fp.line]) return; for (let d = phase; d < fp.len; d += spacing) f.push({ type: 'Feature', properties: { line: fp.line }, geometry: { type: 'Point', coordinates: along(fp, d) } }); });
   map.getSource('particles').setData(FC(f));
 }
+let tphase = 0, routeFilter = null;
+function updateTrucks(dt, zoom) {
+  const spacing = 6, speed = 6 * Math.pow(2, 8.5 - zoom); // km between trucks, km/s of film time (zoom-relative)
+  tphase = (tphase + speed * dt) % spacing;
+  const f = [];
+  routeParts.forEach(r => { if (routeFilter && !routeFilter.includes(r.kind)) return; const sp = Math.min(spacing, Math.max(0.6, r.len / 3)); for (let d = tphase % sp; d < r.len; d += sp) f.push({ type: 'Feature', properties: { kind: r.kind }, geometry: { type: 'Point', coordinates: along(r, d) } }); });
+  map.getSource('trucks').setData(FC(f));
+}
 const dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,4,0],[0,0.5,3,3.5],[0,1,3,3],[0,1.5,3,2.5],[0,2,3,2],[0,2.5,3,1.5],[0,3,3,1],[0,3.5,3,0.5]];
 let dashStep = -1;
 
 /* ---------- HUD ---------- */
 const N = ST.scenes.length;
-const FIRST = ST.scenes[0].titleCard ? 1 : 0; // the title scene is the opening, not a slide
+const FIRST = ST.scenes[0].titleCard && !ST.scenes[0].vo ? 1 : 0; // a silent title scene is the opening, not a slide
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const isRec = () => document.body.classList.contains('rec');
 const CREDITS = 'IAEA updates via World Nuclear Association · UCDP GED · OpenStreetMap · Sentinel-2 cloudless (EOX) · Esri World Imagery · NASA Black Marble · AWS Terrain Tiles';
@@ -312,16 +355,27 @@ const LEGEND = [
   ['trenches', sw.line('#ffdf6b', 1.5), 'Trenches', () => has(X.trenches)],
   ['artillery', sw.dot('#ffdf6b', 7), 'Artillery', () => has(X.artillery)],
   ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights, 2016'],
+  ['dnb20260124', sw.fill('linear-gradient(90deg,#0b0d10,#f2f2f2)'), 'Night lights, 24 Jan 2026 (VIIRS)'],
+  ['water', sw.fill('rgba(92,200,255,.3)', '1px solid #8fdcff'), 'Cooling water'],
+  ['routes', sw.line('#ffd166', 3), 'Diesel route (shortest by road)', sc => !sc.routeKinds || sc.routeKinds.includes('diesel')],
+  ['routes', sw.line('#9dfcc4', 3), 'Repair crew route · Ukrainian side', sc => !sc.routeKinds || sc.routeKinds.includes('crew-ua')],
+  ['routes', sw.line('#ff8a7a', 3), 'Repair crew route · Russian side', sc => !sc.routeKinds || sc.routeKinds.includes('crew-ru')],
+  ['trucks', sw.dot('#fff', 6), 'Convoys (illustrative)'],
+  ['roads', sw.line('#e8ece9', 1), 'Main roads'],
+  ['rail', sw.line('#c9d1cd', 1.5, 'dashed'), 'Railway'],
+  ['railDisused', sw.line('#ff6b5a', 2, 'dashed'), 'Disused branch to Enerhodar'],
+  ['supplyEvents', sw.dot('#ff3b2f', 8), 'Fatal events near the route (UCDP)'],
 ];
 function buildLegend(sc) {
-  $('#legend').innerHTML = LEGEND.filter(([k, , , ok]) => (sc.layers[k] || 0) >= 0.3 && (!ok || ok()))
+  $('#legend').innerHTML = LEGEND.filter(([k, , , ok]) => (sc.layers[k] || 0) >= 0.3 && (!ok || ok(sc)))
     .map(([, s, l]) => `<div class="row"><span class="sw">${s}</span>${esc(l)}</div>`).join('');
 }
 
 /* ---------- story panel ---------- */
 function slideHTML(sc, dir) {
   const cls = `slide${dir < 0 ? ' back' : ''}`;
-  if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div></div>`;
+  if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>${sc.vo ? `
+    <div id="dateline" class="dateline none"></div><p class="lede">${esc(sc.vo)}</p>` : ''}</div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
     <p class="lede">${esc(sc.vo)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
@@ -330,14 +384,14 @@ function slideHTML(sc, dir) {
 }
 function renderPanel(sc, dir) {
   const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
-  $('#psrc').textContent = sc.endCard ? CREDITS : sc.titleCard ? '' : (sc.sources || '');
+  $('#psrc').textContent = sc.endCard ? CREDITS : (sc.sources || '');
   $('#pg').textContent = `${Math.max(1, cur - FIRST + 1)} / ${N - FIRST}`;
   $('#bBack').disabled = cur <= FIRST;
   $('#menu').querySelectorAll('a').forEach(a => { const on = +a.dataset.i === cur; a.classList.toggle('cur', on); on ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current'); });
 }
 function buildMenu() {
   $('#menu').innerHTML = ST.scenes.slice(FIRST).map((sc, k) =>
-    `<a href="#${sc.id}" data-i="${k + FIRST}"><span class="n">${sc.chapter || '—'}</span>${esc(sc.endCard ? 'Closing' : sc.name)}</a>`).join('');
+    `<a href="#${sc.id}" data-i="${k + FIRST}"><span class="n">${sc.chapter || '—'}</span>${esc(sc.endCard ? 'Closing' : sc.titleCard ? ST.title : sc.name)}</a>`).join('');
   $('#menu').querySelectorAll('a').forEach(a => a.onclick = e => { e.preventDefault(); go(+a.dataset.i); });
 }
 function toggleMenu(v) {
@@ -394,7 +448,7 @@ function startIntro() {
 function endIntro() {
   if (intro !== 1) return; intro = 2; clearTimeout(introTimer);
   $('#intro').classList.remove('on');
-  setTimeout(() => { intro = 0; document.body.classList.remove('intro'); go(FIRST); }, 1100);
+  setTimeout(() => { intro = 0; document.body.classList.remove('intro'); if (cur === FIRST) syncSound(); else go(FIRST); }, 1100);
 }
 
 /* ---------- scene management ---------- */
@@ -410,11 +464,14 @@ function enter(i, snap) {
   buildCallouts(sc);
   renderPanel(sc, dir);
   buildLegend(sc);
+  const rf = sc.routeKinds ? ['in', ['get', 'kind'], ['literal', sc.routeKinds]] : null;
+  ['routes', 'routes-glow', 'trucks'].forEach(id => map.getLayer(id) && map.setFilter(id, rf));
+  routeFilter = sc.routeKinds || null;
   $('#card .n').textContent = sc.chapter; $('#card .t').textContent = sc.name;
   setStamp(sc.stamp || '');
   $('#cap').textContent = sc.vo || '';
   $('#counter').style.opacity = 0; $('#ucdpCount').style.opacity = 0;
-  const show = { counter: sc.id === 'dependency', ucdpCount: sc.id === 'frontier', timeline: !!sc.layers.timeline, log: !!sc.layers.log };
+  const show = { counter: !!sc.counter, ucdpCount: sc.id === 'frontier', timeline: !!sc.layers.timeline, log: !!sc.layers.log };
   Object.entries(show).forEach(([id, v]) => { $('#' + id).style.display = v ? '' : 'none'; });
   $('#pdata').classList.toggle('on', Object.values(show).some(Boolean));
   if (show.timeline) buildTimeline();
@@ -431,10 +488,15 @@ function render(dt) {
   map.jumpTo({ center: c.c, zoom: c.z, pitch: c.p, bearing: c.b });
 
   // scene-specific forcing
+  if (sc.imagerySeq) { const q = sc.imagerySeq; const w = {}; q.forEach(([, l]) => w[l] = 0);
+    for (let k = 0; k < q.length; k++) { const u = k === 0 ? 1 : clamp((tl - q[k][0]) / 2, 0, 1); if (u > 0) { Object.keys(w).forEach(l => w[l] *= (1 - u)); w[q[k][1]] = u; } }
+    Object.entries(w).forEach(([l, v]) => force(l, v)); }
+  if (sc.stamps) { let s = sc.stamps[0][1]; sc.stamps.forEach(([t, v]) => { if (tl >= t) s = v; }); setStamp(s, 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E'); }
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
-  if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force('lights', lerp(sc.dim.from, sc.dim.to, u)); }
+  if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force(sc.dim.layer || 'lights', lerp(sc.dim.from, sc.dim.to, u)); }
   if (sc.id === 'repair') updateRepair(sc, tl);
-  if (sc.id === 'dependency') { const n = Math.round(27 * ease.out(clamp((tl - 3) / 7, 0, 1))); $('#counter .v').textContent = n; $('#counter').style.opacity = clamp((tl - 2) / 1.5, 0, 1); }
+  if (sc.counter) { const k = sc.counter, n = Math.round(k.n * ease.out(clamp((tl - k.t0) / (k.t1 - k.t0), 0, 1))); $('#counter .v').textContent = n; $('#counter .k').textContent = k.label; $('#counter .note').textContent = k.note || '';
+    $('#counter').style.opacity = clamp((tl - k.t0 + 1) / 1.5, 0, 1) * (isRec() ? clamp((sc.dur - tl) / 1.5, 0, 1) : 1); } // slides hold at the end, so no fade-out
   if (sc.id === 'frontier') {
     const n = sc.dm.at(tl);
     map.setFilter('ucdp', ['<=', ['get', 'n'], n]); map.setFilter('ucdp-glow', ['<=', ['get', 'n'], n]);
@@ -452,6 +514,7 @@ function render(dt) {
 
   // animated details
   if (L.particles.cur > 0.01) updateParticles(dt, sc.flow || 1, c.z);
+  if (L.trucks.cur > 0.01) updateTrucks(dt, c.z);
   if (L.gridflow.cur > 0.01) { const s = Math.floor(performance.now() / 70) % dashSeq.length; if (s !== dashStep) { dashStep = s; map.setPaintProperty('grid-flow', 'line-dasharray', dashSeq[s]); } }
   const pulse = (performance.now() / 1000) % 2 / 2;
   const big = sc.layers.beacon ? 3 : 1;
@@ -465,7 +528,8 @@ function render(dt) {
   // record-mode overlays (hidden by CSS otherwise)
   const chapterCard = sc.chapter && tl > 0.6 && tl < 5.2;
   $('#card').classList.toggle('on', !!chapterCard);
-  const tOn = (sc.titleCard && tl > 3 && tl < 21) || (sc.endCard && tl > (sc.capUntil || 13));
+  const tc = sc.titleCard === true ? { t0: 3, t1: 21 } : sc.titleCard;
+  const tOn = (tc && tl > tc.t0 && tl < tc.t1) || (sc.endCard && tl > (sc.capUntil || 13));
   $('#title .cr').textContent = sc.endCard ? 'Sources · ' + CREDITS : 'GSAPP · Advanced V Studio · Fall 2026';
   $('#dimmer').style.opacity = isRec() && sc.endCard && tl > (sc.capUntil || 13) ? 0.45 : 0;
   $('#title').classList.toggle('on', !!tOn);
@@ -482,8 +546,10 @@ function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!ble
 
 function loop(now) {
   const dt = lastNow == null ? 0 : Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
-  if (playing) {
-    const prev = T; T += dt;
+  if (playing && !intro) { // the clock waits while the opening title shows, so narration starts from the top
+    const prev = T;
+    if (soundOn && !snd.paused && snd.readyState >= 2 && Math.abs(snd.currentTime - (T + dt)) < 0.5) T = snd.currentTime; // the soundtrack is the clock
+    else { T += dt; if (soundOn && !snd.paused && Math.abs(snd.currentTime - T) > 0.3 && snd.readyState >= 1) snd.currentTime = T; }
     const si = sceneAt(prev), end = ST.scenes[si].start + ST.scenes[si].dur;
     if (prev < end && T >= end && (!auto || si === N - 1)) { T = end - 0.001; held = true; setPlay(false); }
     else if (T >= end) dir = 1;
@@ -497,9 +563,17 @@ const ICON = {
   play: '<svg viewBox="0 0 12 12"><path d="M3 1.5v9l7.5-4.5z"/></svg>',
   pause: '<svg viewBox="0 0 12 12"><path d="M2.5 1.5H5v9H2.5zM7 1.5h2.5v9H7z"/></svg>',
   replay: '<svg class="r" viewBox="0 0 12 12"><path d="M2.2 4.6A4 4 0 1 1 2 7"/><path d="M1.6 1.8v3h3"/></svg>',
+  snd: '<svg viewBox="0 0 12 12"><path class="f" d="M1.5 4.5h2l3-2.5v8l-3-2.5h-2z"/><path d="M8.3 4.2a2.6 2.6 0 0 1 0 3.6M9.8 2.8a4.6 4.6 0 0 1 0 6.4"/></svg>',
+  mute: '<svg viewBox="0 0 12 12"><path class="f" d="M1.5 4.5h2l3-2.5v8l-3-2.5h-2z"/><path d="M8 4.3l3 3.4M11 4.3l-3 3.4"/></svg>',
 };
+/* soundtrack: narration + drone, kept in step with the film clock */
+const snd = $('#snd'); let soundOn = !qs.has('mute');
+// load it into memory so it can seek on any server (python's http.server has no byte ranges)
+fetch(snd.getAttribute('src')).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn) snd.play().catch(() => {}); }, { once: true }); }).catch(() => {});
+function syncSound() { if (!soundOn || intro) { snd.pause(); return; } try { snd.currentTime = T; } catch (e) {} if (playing) snd.play().catch(() => {}); else snd.pause(); }
+function setSound(v) { soundOn = v; $('#bSnd').innerHTML = ICON[v ? 'snd' : 'mute']; $('#bSnd').setAttribute('aria-label', v ? 'Mute narration' : 'Unmute narration'); $('#bSnd').classList.toggle('off', !v); syncSound(); }
 function setPlay(v) {
-  playing = v; if (v) held = false;
+  playing = v; if (v) held = false; syncSound();
   const k = v ? 'pause' : held ? 'replay' : 'play';
   $('#bPlay').innerHTML = ICON[k]; $('#bPlay').setAttribute('aria-label', k === 'replay' ? 'Replay this slide' : k === 'pause' ? 'Pause' : 'Play');
 }
@@ -520,7 +594,7 @@ function seekLocal(t, play) { // within the current slide
   T = sc.start + clamp(t, 0.001, sc.dur - 0.001); logShown = -1; held = false;
   setPlay(play || playing);
 }
-function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; first = true; } // hard cut (URL ?t= and test hook)
+function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; first = true; syncSound(); } // hard cut (URL ?t= and test hook)
 function togglePlay() { if (held) seekLocal(0, true); else setPlay(!playing); }
 function setAuto(v) { auto = v; if (auto && held && cur < N - 1) next(); }
 function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); placeData(); updatePadding(); }
@@ -528,6 +602,7 @@ function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); 
 $('#bPlay').onclick = togglePlay;
 $('#bBack').onclick = back; $('#bNext').onclick = next;
 $('#bMenu').onclick = () => toggleMenu();
+$('#bSnd').onclick = () => setSound(!soundOn);
 (() => { // per-slide scrubber along the top edge of the nav bar
   const s = $('#scrub'); let drag = false;
   const at = e => { const r = s.getBoundingClientRect(), sc = ST.scenes[cur]; if (sc) seekLocal(clamp((e.clientX - r.left) / r.width, 0, 1) * sc.dur); };
@@ -535,7 +610,7 @@ $('#bMenu').onclick = () => toggleMenu();
   s.addEventListener('pointermove', e => drag && at(e));
   s.addEventListener('pointerup', () => drag = false);
 })();
-addEventListener('pointerdown', () => { if (intro === 1) endIntro(); });
+addEventListener('pointerdown', () => { if (intro === 1) endIntro(); else if (playing && soundOn && snd.paused) syncSound(); }); // browsers only allow sound after a click
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (intro) { if (intro === 1 && !['r', 'R', 'f', 'F'].includes(e.key)) { e.preventDefault(); endIntro(); return; } if (intro === 2) return; }
@@ -548,7 +623,8 @@ addEventListener('keydown', e => {
     case 'Home': go(FIRST); break;
     case 'End': go(N - 1); break;
     case 'Escape': toggleMenu(false); break;
-    case 'm': case 'M': toggleMenu(); break;
+    case 'm': case 'M': setSound(!soundOn); break;
+    case 'l': case 'L': toggleMenu(); break;
     case 'a': case 'A': setAuto(!auto); break;
     case 'c': case 'C': capOn = !capOn; break;
     case 'r': case 'R': toggleRec(); break;
@@ -562,14 +638,16 @@ buildMenu(); setPlay(false);
 map.on('load', () => {
   buildLayers(); placeData(); updatePadding();
   addEventListener('resize', () => { buildTimeline(); updatePadding(); });
-  $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021, 2024) · Esri, Maxar, Earthstar Geographics · NASA Black Marble / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
+  $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021–2025) · Esri, Maxar, Earthstar Geographics · NASA Black Marble, VIIRS NOAA-20 / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
   const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
   if (hi >= FIRST) seek(ST.scenes[hi].start + 0.001);
   if (qs.has('t')) seek(+qs.get('t'));
   if (qs.has('scene')) { const s = ST.scenes.find(s => s.id === qs.get('scene')); if (s) seek(s.start + 0.001); }
   const ld = $('#loading'); if (ld) ld.style.opacity = 0; setTimeout(() => $('#loading')?.remove(), 1000);
   if (!qs.has('paused')) setPlay(true);
-  if (sceneAt(T) < FIRST && !isRec()) startIntro(); else document.body.classList.remove('intro');
+  const deep = hi >= FIRST || qs.has('t') || qs.has('scene');
+  if (!deep && !isRec()) startIntro(); else document.body.classList.remove('intro');
+  setSound(soundOn);
   requestAnimationFrame(loop);
 });
 // test hook: render a given time without playing

@@ -1,0 +1,84 @@
+{
+ "method": "Road-access screen for ZNPP: diesel supply and line-repair routes.\n\nInput : raw/roads.json (OSM motorway–secondary for the region, tertiary near the plant;\n        fetched by fetch_roads.sh), ../attack-events/reported-damage-zones.geojson,\n        ../network-scan/reservoir-2023-05-01.geojson (frontline proxy).\nOutput: routes.geojson, roads-major.geojson, summary.json\n\nMethod: an undirected graph of OSM ways (nodes = shared vertices), edge weight = length.\nShortest paths by distance, not travel time. The graph knows nothing about checkpoints,\nclosed bridges, mined roads or the frontline itself, so routes are *possible* road\ngeometry, not observed convoy movements. Exposure = route km within 10 / 20 km of the\n2023 reservoir outline, used as a proxy for the river frontline only (the eastern\nland front near Kamianske/Orikhiv is not modelled).",
+ "osm_timestamp": "2026-11-24 (Overpass)",
+ "routes": [
+  {
+   "kind": "diesel",
+   "from": "Melitopol",
+   "to": "ZNPP",
+   "road_km": 125.6,
+   "straight_km": 93.8,
+   "detour": 1.34,
+   "km_within_10km_of_river_front": 14.3,
+   "km_within_20km_of_river_front": 30.0,
+   "roads": "М-14 · Т-08-05 · Р-37, Т-08-05 · Р-37 · С-080801",
+   "note": "Diesel and supplies from the occupied hinterland",
+   "snap_km": 3.78
+  },
+  {
+   "kind": "diesel",
+   "from": "Chonhar (Crimea)",
+   "to": "ZNPP",
+   "road_km": 228.7,
+   "straight_km": 163.7,
+   "detour": 1.4,
+   "km_within_10km_of_river_front": 14.3,
+   "km_within_20km_of_river_front": 30.0,
+   "roads": "М-18 · М-18;Р-47 · Т-22-09 · О221303 · О-080408 · Т-08-05 · Р-37, Т-08-05 · Р-37",
+   "note": "Supply from Crimea",
+   "snap_km": 3.78
+  },
+  {
+   "kind": "crew-ru",
+   "from": "Enerhodar",
+   "to": "Z2 switchyard",
+   "road_km": 2.1,
+   "straight_km": 1.6,
+   "detour": 1.31,
+   "km_within_10km_of_river_front": 2.1,
+   "km_within_20km_of_river_front": 2.1,
+   "roads": "Р-37",
+   "note": "Russian-side repairs",
+   "snap_km": 0.4
+  },
+  {
+   "kind": "crew-ua",
+   "from": "Nikopol",
+   "to": "Z1 north bank",
+   "road_km": 3.6,
+   "straight_km": 3.6,
+   "detour": 0.99,
+   "km_within_10km_of_river_front": 3.6,
+   "km_within_20km_of_river_front": 3.6,
+   "roads": "Т-04-32",
+   "note": "Ukrainian-side repairs",
+   "snap_km": 1.19
+  },
+  {
+   "kind": "crew-ua",
+   "from": "Marhanets",
+   "to": "Z10 (~10 km from switchyard)",
+   "road_km": 3.2,
+   "straight_km": 3.6,
+   "detour": 0.88,
+   "km_within_10km_of_river_front": 3.2,
+   "km_within_20km_of_river_front": 3.2,
+   "roads": "Т-04-35",
+   "note": "Ukrainian-side repairs",
+   "snap_km": 0.81
+  },
+  {
+   "kind": "crew-ua",
+   "from": "Dnipro",
+   "to": "Z4 Dniprovska substation",
+   "road_km": 101.7,
+   "straight_km": 73.1,
+   "detour": 1.39,
+   "km_within_10km_of_river_front": 0.0,
+   "km_within_20km_of_river_front": 0.0,
+   "roads": "Н-31 · М-30 · М-30;Н-08 · М-30;Т-04-20 · Т-04-15",
+   "note": "Ukrainian-side repairs",
+   "snap_km": 4.11
+  }
+ ]
+}

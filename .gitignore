@@ -1,2 +1,7 @@
 .DS_Store
 __pycache__/
+audio/*.wav
+audio/.venv-kokoro/
+audio/cache/
+audio/samples/
+audio/soundtrack-*.m4a

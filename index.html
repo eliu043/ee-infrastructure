@@ -59,7 +59,7 @@ body.intro #panel,body.intro #legend,body.intro #rightcol{opacity:0;transform:tr
 #menu a.cur{color:var(--ink);box-shadow:inset 2px 0 0 var(--k750)}
 #menu a.cur .n{color:var(--k750)}
 /* nav bar with the slide's progress as its top edge */
-.pnav{position:relative;display:grid;grid-template-columns:1fr 40px auto 1fr;border-top:1px solid var(--edge)}
+.pnav{position:relative;display:grid;grid-template-columns:1fr 40px 40px auto 1fr;border-top:1px solid var(--edge)}
 #scrub{position:absolute;left:0;right:0;top:-6px;height:11px;cursor:pointer;z-index:1}
 #scrub .fill{position:absolute;left:0;top:5px;height:1px;background:var(--k750)}
 #scrub:hover .fill{top:4px;height:3px}
@@ -70,6 +70,8 @@ body.intro #panel,body.intro #legend,body.intro #rightcol{opacity:0;transform:tr
 .pnav svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6}
 #bPlay svg{fill:currentColor;stroke:none;width:10px;height:10px}
 #bPlay svg.r{fill:none;stroke:currentColor;stroke-width:1.5}
+#bSnd svg{width:13px;height:13px}#bSnd .f{fill:currentColor;stroke:none}#bSnd.off{color:var(--faint)}
+#counter .note{color:var(--faint);margin-top:6px}#counter .note:empty{display:none}
 #bMenu{padding:0 14px;font:500 11.5px var(--mono);letter-spacing:.04em;color:var(--ink2)}
 #bMenu.on{background:rgba(255,255,255,.1)}
 #bNext.ready{background:rgba(255,77,58,.2)}
@@ -202,7 +204,7 @@ body.tl #cap{bottom:190px}
 <div id="readout" class="hud"></div>
 <div id="rightcol">
   <div id="legend" class="glass"></div>
-  <div id="counter" class="glass card" style="opacity:0;display:none"><div class="v">0</div><div class="k">COMPLETE LOSSES OF OFF-SITE POWER SINCE 2022 · IAEA</div></div>
+  <div id="counter" class="glass card" style="opacity:0;display:none"><div class="v">0</div><div><div class="k"></div><div class="k note"></div></div></div>
   <div id="ucdpCount" class="glass card" style="opacity:0;display:none"><div class="v">0</div><div class="k">FATAL EVENTS NEAR THE PLANT · UCDP GED</div></div>
   <div id="log" class="glass" style="opacity:0;display:none"><div class="h">OFF-SITE POWER</div><div class="list"></div></div>
 </div>
@@ -223,6 +225,7 @@ body.tl #cap{bottom:190px}
     <div id="scrub" title="Scrub this slide"><div class="fill"></div></div>
     <button id="bBack" aria-label="Previous slide"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button>
     <button id="bPlay" aria-label="Pause" title="Play / pause (Space)"></button>
+    <button id="bSnd" aria-label="Mute narration"></button>
     <button id="bMenu" aria-label="All slides" aria-expanded="false"><span id="pg">1 / 9</span></button>
     <button id="bNext" aria-label="Next slide">Next<svg viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg></button>
   </div>
@@ -230,6 +233,7 @@ body.tl #cap{bottom:190px}
 
 <div id="attrib"></div>
 <div id="loading">LOADING</div>
+<audio id="snd" src="audio/soundtrack.m4a" preload="auto"></audio>
 
 <script src="data.js"></script>
 <script src="extra.js"></script>

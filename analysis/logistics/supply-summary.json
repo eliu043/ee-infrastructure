@@ -1,0 +1,45 @@
+{
+ "method": "Supply-corridor screen: rail route to the plant, and recorded violence along road and rail routes.\n\nInput : raw/rail.json (OSM railway=rail, Overpass 2026-11-24), routes.geojson (analyze_roads.py),\n        ../attack-events/raw/ged261-csv.zip (UCDP GED 26.1) + GEDEvent_v26_01_26_09.csv (UCDP candidate, 2026).\nOutput: rail-route.geojson, rail-main.geojson, supply-events.geojson, supply-summary.json\n\nLimits: UCDP records only events with at least one death, geolocated often to a settlement or district\ncentroid (we keep where_prec 1–2: exact place or within ~25 km). It is not a record of shelling of\nroads or railways as such; it shows that the corridors run through places where lethal violence was\nrecorded. Rail path is the shortest track distance in OSM and says nothing about which lines operate.",
+ "corridors": [
+  {
+   "corridor": "road: Melitopol → ZNPP",
+   "km": 125.3,
+   "buffer_km": 2.0,
+   "events": 45,
+   "deaths_best": 129,
+   "by_year": {
+    "2022": 10,
+    "2023": 18,
+    "2024": 6,
+    "2025": 5,
+    "2026": 6
+   },
+   "top_locations": [
+    [
+     "Melitopol town",
+     30
+    ],
+    [
+     "Vesele town",
+     8
+    ],
+    [
+     "Dniprovka village",
+     2
+    ],
+    [
+     "Velyka Bilozerka village",
+     2
+    ],
+    [
+     "Zapovitne village",
+     2
+    ],
+    [
+     "Trudove village",
+     1
+    ]
+   ]
+  }
+ ]
+}
