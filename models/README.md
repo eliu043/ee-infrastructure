@@ -13,3 +13,11 @@ Regenerate:
 PIPE=/path/to/frame-geo-evidence-pipeline
 $PIPE/.venv/bin/python tools/export_plant_glb.py --pipeline $PIPE
 ```
+
+## Levelled ground (`flatten.json`)
+
+The terrain under the model is levelled so the buildings don't sit on the DEM's lumps (it's a surface model: halls, towers and spoil heaps show as bumps of up to ~50 m). `flatten.json` is a 40 m grid over the plant: `w` (1 within 90 m of the model's footprint, easing to 0 over 380 m) and `t`, a smooth terrace height (the DEM's 25th percentile within 320 m, averaged over 320 m), so the site keeps its real levels (the units' platform, the lower thermal plant) without the bumps. `flatten.js` applies it to every terrain tile through the `flatdem://` protocol (terrain and hillshade alike), and `plant3d.js` sets each vertex on the same surface. Rebuild after re-exporting the model:
+
+```
+$PIPE/.venv/bin/python tools/build_flatten.py
+```
