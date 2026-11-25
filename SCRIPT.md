@@ -19,9 +19,19 @@ Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F
 | R | record mode: hides the control bar |
 | URL | `?t=95` start at 95 s · `?scene=repair` · `?rec=1` · `?nocap=1` |
 
+## Soundtrack
+`audio/soundtrack.m4a` plays in sync with the film: narration plus a low backing drone. The film follows the audio clock, so scrubbing and chapter jumps stay aligned. **M** toggles sound; `?mute=1` starts silent.
+
+- **Voice:** macOS "Daniel" (British English, newsreader style) at 165 wpm, with short beats after each sentence. Each line starts as its chapter card clears (`audio/cues.json` lists the exact times; every line fits its chapter).
+- **Backing:** a synthesized low drone. The key shifts lower chapter by chapter (it brightens briefly for Lifeline), with a filtered rumble underneath. Low impacts land when Kyiv goes dark, on the title, and at Occupation, Shelling, Supply and Frontier. The drone dips ~8 dB whenever the voice speaks.
+- **Levels:** the voice sits around −20 dBFS RMS. The backing is ~12 dB under it in pauses and ~20 dB under it during speech.
+- **Separate stems for editing** (local only, not on GitHub): `audio/narration.wav`, `audio/backing.wav`, `audio/soundtrack.wav`.
+- **Rebuild after editing narration or timing in `story.js`:** `cd audio && python3 build_audio.py`. Options: `--voice "Jamie (Premium)"`, `--rate 160`, `--music-db -17`, `--duck-db -8`.
+- **Better voice:** install an Enhanced/Premium voice in System Settings → Accessibility → Spoken Content → System Voice → Manage Voices (e.g. Daniel (Enhanced), Jamie (Premium), Serena (Premium)), then rebuild with `--voice`. For a final cut, a recorded human read over `backing.wav` will sound best.
+
 ## Recording
 1. **Do a warm-up run first.** Play the whole film once, or scrub through every chapter. The satellite and terrain tiles come from the internet, and on a first pass they load in visibly. The second pass plays from the browser cache.
-2. Record with OBS or QuickTime (screen + mic), using `?rec=1`.
+2. Record with OBS or QuickTime (screen + system audio for the built-in soundtrack, or screen + mic to narrate live with M muting the voice track), using `?rec=1`.
    - **Voice live over picture:** use presenter mode (P) and advance after each paragraph.
    - **Voice-over recorded separately:** play straight through, then lay the audio over it in Premiere.
 3. Captions can stay on as subtitles. Turn them off (C) if you'd rather read from this sheet.

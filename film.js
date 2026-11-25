@@ -397,7 +397,9 @@ function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; o.cur = 
 function loop(now) {
   const dt = lastNow == null ? 0 : Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
   if (playing) {
-    const prev = T; T += dt;
+    const prev = T;
+    if (soundOn && !snd.paused && snd.readyState >= 2 && Math.abs(snd.currentTime - (T + dt)) < 0.5) T = snd.currentTime; // audio is the clock
+    else { T += dt; if (soundOn && Math.abs(snd.currentTime - T) > 0.3 && snd.readyState >= 1) snd.currentTime = T; }
     if (presenter) { const sc = ST.scenes[sceneAt(prev)], end = sc.start + sc.dur; if (prev < end && T >= end && sceneAt(prev) < ST.scenes.length - 1) { T = end - 0.001; setPlay(false); } }
     if (T >= TOTAL) { T = TOTAL - 0.001; setPlay(false); }
   }
@@ -406,8 +408,12 @@ function loop(now) {
 }
 
 /* ---------- controls ---------- */
-function setPlay(v) { playing = v; $('#bPlay').textContent = v ? '❚❚ PAUSE' : '▶ PLAY'; }
-function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; }
+const snd = $('#snd'); let soundOn = !qs.has('mute');
+// load the soundtrack into memory so it can seek on any server (python's http.server has no byte ranges)
+fetch(snd.getAttribute('src')).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn) snd.play().catch(() => {}); }, { once: true }); }).catch(() => {});
+function syncSound() { if (!soundOn) { snd.pause(); return; } try { snd.currentTime = T; } catch (e) {} if (playing) snd.play().catch(() => {}); else snd.pause(); }
+function setPlay(v) { playing = v; syncSound(); $('#bPlay').textContent = v ? '❚❚ PAUSE' : '▶ PLAY'; }
+function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; if (typeof snd !== 'undefined') try { snd.currentTime = T; } catch (e) {} }
 function chapter(d) { const i = clamp(sceneAt(T) + d, 0, ST.scenes.length - 1); seek(ST.scenes[i].start + 0.001); }
 function buildScrub() {
   const s = $('#scrub');
@@ -417,6 +423,8 @@ function buildScrub() {
 }
 const toggleRec = () => document.body.classList.toggle('rec');
 $('#bPlay').onclick = () => { if (T >= TOTAL - 0.01) seek(0); setPlay(!playing); };
+$('#bSnd').onclick = () => { soundOn = !soundOn; $('#bSnd').classList.toggle('act', soundOn); syncSound(); };
+if (!soundOn) $('#bSnd').classList.remove('act');
 $('#bCap').onclick = () => { capOn = !capOn; $('#bCap').classList.toggle('act', capOn); };
 $('#bPres').onclick = () => { presenter = !presenter; $('#bPres').classList.toggle('act', presenter); };
 $('#bRec').onclick = toggleRec;
@@ -425,6 +433,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); $('#bPlay').click(); }
   else if (e.key === 'ArrowRight') chapter(1); else if (e.key === 'ArrowLeft') chapter(T - ST.scenes[sceneAt(T)].start < 2 ? -1 : 0);
   else if (e.key === 'Home' || e.key === '0') seek(0);
+  else if (e.key === 'm' || e.key === 'M') $('#bSnd').click();
   else if (e.key === 'c' || e.key === 'C') $('#bCap').click(); else if (e.key === 'p' || e.key === 'P') $('#bPres').click();
   else if (e.key === 'r' || e.key === 'R') toggleRec(); else if (e.key === '?') $('#bHelp').click();
   else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }

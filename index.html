@@ -134,6 +134,7 @@ body.idle{cursor:none}
   <button id="bPlay">▶ PLAY</button>
   <span id="clock">00:00 / 07:00</span>
   <div id="scrub"><div class="track"></div><div class="fill"></div></div>
+  <button id="bSnd" class="act" title="Sound on/off (M)">SOUND</button>
   <button id="bCap" class="act" title="Captions (C)">CC</button>
   <button id="bPres" title="Pause at the end of each chapter (P)">PRESENTER</button>
   <button id="bRec" title="Hide controls for recording (R)">REC MODE</button>
@@ -141,10 +142,11 @@ body.idle{cursor:none}
 </div>
 <div id="help">
   SPACE play / pause · ← → previous / next chapter · HOME restart<br>
-  C captions · P presenter mode (holds at each chapter end) · R record mode (hides controls) · F fullscreen<br>
-  URL: ?t=95 start at 95 s · ?scene=repair · ?rec=1 · ?nocap=1
+  M sound · C captions · P presenter mode (holds at each chapter end) · R record mode (hides controls) · F fullscreen<br>
+  URL: ?t=95 start at 95 s · ?scene=repair · ?rec=1 · ?nocap=1 · ?mute=1
 </div>
 <div id="loading">LOADING TERRAIN</div>
+<audio id="snd" src="audio/soundtrack.m4a" preload="auto"></audio>
 
 <script src="data.js"></script>
 <script src="extra.js"></script>
