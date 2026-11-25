@@ -1,25 +1,42 @@
-"""Build the POWERLINES soundtrack: news-style voice-over (macOS `say`) + synthesized low backing.
+"""Build the POWERLINES soundtrack: news-style voice-over + synthesized low backing.
 
-Run from this folder:  python3 build_audio.py  [--voice "Daniel"] [--rate 165]
+Run from this folder:
+  python3 build_audio.py --engine kokoro                    # local open-source voice (default: bm_george)
+  python3 build_audio.py --engine elevenlabs                # ElevenLabs (needs ELEVENLABS_API_KEY)
+  python3 build_audio.py --engine say --voice "Jamie (Premium)"   # built-in macOS voice
 Reads ../story.js (via node) so clips stay in sync with the film clock.
-Writes narration.wav (voice only), backing.wav (music only), soundtrack.wav and soundtrack.m4a (mix),
-and cues.json (when each line starts/ends). Re-run after editing narration or durations in story.js.
+Writes narration.wav (voice only), backing.wav (music only), soundtrack.wav and soundtrack.m4a (mix — the
+file the film plays), soundtrack-<engine>.m4a (kept per engine for comparison) and cues.json.
+Rendered lines are cached in cache/ by engine+voice+text, so re-runs only re-render changed lines
+(this also avoids spending ElevenLabs credits twice).
 
-Voice: any installed macOS voice. For better quality, install an Enhanced/Premium voice in
-System Settings → Accessibility → Spoken Content → System Voice → Manage Voices
-(e.g. "Daniel (Enhanced)", "Jamie (Premium)", "Serena (Premium)") and pass its name with --voice."""
-import argparse, json, re, subprocess, tempfile, wave, pathlib
+Engines
+  say         macOS voices. Install better ones in System Settings → Accessibility → Spoken Content →
+              System Voice → Manage Voices (e.g. "Jamie (Premium)", "Serena (Premium)").
+  kokoro      Kokoro-82M (Apache-2.0), runs locally in .venv-kokoro (see kokoro_tts.py).
+              British voices: bm_george, bm_daniel, bm_lewis, bm_fable, bf_emma, bf_isabella.
+  elevenlabs  api.elevenlabs.io. Set the key in your shell:  export ELEVENLABS_API_KEY=...
+              --voice takes a voice ID or one of: daniel (British news presenter), george (British narrator).
+              The narration text is sent to ElevenLabs."""
+import argparse, hashlib, json, os, re, subprocess, tempfile, urllib.error, urllib.request, wave, pathlib
 import numpy as np
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, resample_poly
 
 HERE = pathlib.Path(__file__).resolve().parent
 SR = 44100
 ap = argparse.ArgumentParser()
-ap.add_argument("--voice", default="Daniel")
-ap.add_argument("--rate", type=int, default=165)          # words per minute; news reads ~160–170
+ap.add_argument("--engine", choices=["say", "kokoro", "elevenlabs"], default="kokoro")
+ap.add_argument("--voice", default=None)
+ap.add_argument("--rate", type=int, default=165)          # say: words per minute; news reads ~160–170
+ap.add_argument("--speed", type=float, default=0.95)      # kokoro speed
+ap.add_argument("--model", default="eleven_multilingual_v2")  # elevenlabs model
 ap.add_argument("--music-db", type=float, default=-17)    # backing level under silence
 ap.add_argument("--duck-db", type=float, default=-8)      # extra reduction while the voice speaks
 args = ap.parse_args()
+DEFAULT_VOICE = {"say": "Daniel", "kokoro": "bm_george", "elevenlabs": "daniel"}
+VOICE = args.voice or DEFAULT_VOICE[args.engine]
+EL_VOICES = {"daniel": "onwK4e9ZLuTAKqWW03F9", "george": "JBFqnCBsd6RMkjVDRZzb"}
+CACHE = HERE / "cache"; CACHE.mkdir(exist_ok=True)
 
 # ---------- scenes from story.js ----------
 js = ("global.window={};require('vm').runInThisContext(require('fs').readFileSync('../story.js','utf8'));"
@@ -30,26 +47,81 @@ TOTAL = sum(s["dur"] for s in scenes)
 N = int(TOTAL * SR)
 
 
-def tts(text, path):
-    # newsreader pacing: a short beat after each sentence / dash
-    t = re.sub(r"([.;])\s+", r"\1 [[slnc 350]] ", text.strip())
+def read_wav(path):
+    with wave.open(str(path)) as w:
+        sr, ch = w.getframerate(), w.getnchannels()
+        x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768
+    if ch > 1: x = x.reshape(-1, ch).mean(axis=1)
+    if sr != SR:
+        from math import gcd
+        g = gcd(SR, sr); x = resample_poly(x, SR // g, sr // g).astype(np.float32)
+    return x
+
+
+def render_say(text, out):
+    t = re.sub(r"([.;])\s+", r"\1 [[slnc 350]] ", text.strip())          # newsreader beat after sentences
     t = t.replace(" – ", " [[slnc 250]] ").replace(" — ", " [[slnc 250]] ")
     t = f"[[rate {args.rate}]] [[volm 1.0]] " + t
-    subprocess.run(["say", "-v", args.voice, "--file-format=WAVE", "--data-format=LEI16@44100", "-o", str(path), t], check=True)
-    with wave.open(str(path)) as w:
-        x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768
-    # trim leading/trailing silence
-    nz = np.where(np.abs(x) > 0.01)[0]
+    subprocess.run(["say", "-v", VOICE, "--file-format=WAVE", "--data-format=LEI16@44100", "-o", str(out), t], check=True)
+
+
+def render_kokoro(text, out):
+    py = HERE / ".venv-kokoro/bin/python"
+    if not py.exists():
+        raise SystemExit("Kokoro is not installed: see SCRIPT.md → Soundtrack (uv venv --python 3.12 .venv-kokoro …)")
+    subprocess.run([str(py), str(HERE / "kokoro_tts.py"), "--voice", VOICE, "--speed", str(args.speed), "--out", str(out)],
+                   input=text.encode(), check=True, stderr=subprocess.DEVNULL)
+
+
+def render_elevenlabs(text, out):
+    key = os.environ.get("ELEVENLABS_API_KEY")
+    if not key: raise SystemExit("Set ELEVENLABS_API_KEY in your shell first (export ELEVENLABS_API_KEY=...)")
+    vid = EL_VOICES.get(VOICE.lower(), VOICE)
+    body = json.dumps({"text": text, "model_id": args.model,
+                       "voice_settings": {"stability": 0.6, "similarity_boost": 0.75, "style": 0.1, "use_speaker_boost": True}}).encode()
+    req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{vid}?output_format=mp3_44100_128", data=body,
+                                 headers={"xi-api-key": key, "Content-Type": "application/json", "Accept": "audio/mpeg"})
+    try:
+        mp3 = urllib.request.urlopen(req, timeout=120).read()
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"ElevenLabs error {e.code}: {e.read()[:300].decode(errors='replace')}")
+    tmp = out.with_suffix(".mp3"); tmp.write_bytes(mp3)
+    subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@44100", str(tmp), str(out)], check=True); tmp.unlink()
+
+
+# pronunciation fixes per engine (kokoro takes inline IPA: [word](/phonemes/))
+PRON = {
+    "kokoro": {"ZNPP": "[ZNPP](/zˈɛd ˌɛn pˌiː pˈiː/)", "Kakhovka": "[Kakhovka](/kəhˈɒvkə/)", "Kyiv": "[Kyiv](/kˈiːɪv/)"},
+    "say": {"ZNPP": "Zed N P P"},
+    "elevenlabs": {"ZNPP": "Z.N.P.P."},
+}
+
+
+def speakable(text):
+    for w, r in PRON.get(args.engine, {}).items():
+        text = re.sub(rf"\b{w}\b", r, text)
+    return text
+
+
+def tts(text):
+    text = speakable(text)
+    tag = f"{args.engine}|{VOICE}|{args.rate if args.engine == 'say' else args.speed if args.engine == 'kokoro' else args.model}|{text}"
+    path = CACHE / (hashlib.sha1(tag.encode()).hexdigest()[:16] + ".wav")
+    if not path.exists():
+        {"say": render_say, "kokoro": render_kokoro, "elevenlabs": render_elevenlabs}[args.engine](text, path)
+    x = read_wav(path)
+    nz = np.where(np.abs(x) > 0.01)[0]                                      # trim leading/trailing silence
     return x[nz[0]:nz[-1] + 1] if len(nz) else x
 
 
 # ---------- voice track ----------
 voice = np.zeros(N, np.float32)
 cues = []
-with tempfile.TemporaryDirectory() as td:
+print(f"engine {args.engine} · voice {VOICE}")
+if True:
     for s in scenes:
         if not s["vo"]: continue
-        x = tts(s["vo"], pathlib.Path(td) / f"{s['id']}.wav")
+        x = tts(s["vo"])
         lead = 5.6 if s["chapter"] else 1.6              # wait for the chapter card, as the captions do
         t0 = s["start"] + lead
         limit = s["start"] + (s["capUntil"] or s["dur"]) - 0.4
@@ -134,5 +206,6 @@ write(HERE / "narration.wav", voice * 0.95)
 write(HERE / "backing.wav", music * 10 ** (args.music_db / 20))
 write(HERE / "soundtrack.wav", mix)
 subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "192000", str(HERE / "soundtrack.wav"), str(HERE / "soundtrack.m4a")], check=True)
-json.dump({"voice": args.voice, "rate": args.rate, "total": TOTAL, "cues": cues}, open(HERE / "cues.json", "w"), indent=1)
+(HERE / f"soundtrack-{args.engine}.m4a").write_bytes((HERE / "soundtrack.m4a").read_bytes())
+json.dump({"engine": args.engine, "voice": VOICE, "rate": args.rate, "total": TOTAL, "cues": cues}, open(HERE / "cues.json", "w"), indent=1)
 print("wrote narration.wav, backing.wav, soundtrack.wav, soundtrack.m4a, cues.json · total", TOTAL, "s")

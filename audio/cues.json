@@ -1,89 +1,90 @@
 {
- "voice": "Daniel",
+ "engine": "kokoro",
+ "voice": "bm_george",
  "rate": 165,
  "total": 420,
  "cues": [
   {
    "id": "kyiv",
    "start": 1.6,
-   "end": 7.52,
+   "end": 8.46,
    "limit": 33.6,
    "fits": true
   },
   {
    "id": "hostage",
    "start": 35.6,
-   "end": 42.39,
+   "end": 44.13,
    "limit": 47.6,
    "fits": true
   },
   {
    "id": "lifeline",
    "start": 67.6,
-   "end": 75.97,
+   "end": 77.37,
    "limit": 91.6,
    "fits": true
   },
   {
    "id": "occupation",
    "start": 97.6,
-   "end": 105.29,
+   "end": 107.28,
    "limit": 117.6,
    "fits": true
   },
   {
    "id": "draw",
    "start": 123.6,
-   "end": 131.93,
+   "end": 133.04,
    "limit": 141.6,
    "fits": true
   },
   {
    "id": "water",
    "start": 147.6,
-   "end": 161.33,
+   "end": 164.47,
    "limit": 187.6,
    "fits": true
   },
   {
    "id": "notyet",
    "start": 193.6,
-   "end": 198.73,
+   "end": 199.54,
    "limit": 202.6,
    "fits": true
   },
   {
    "id": "repair",
    "start": 208.6,
-   "end": 218.95,
+   "end": 220.97,
    "limit": 266.6,
    "fits": true
   },
   {
    "id": "dependency",
    "start": 272.6,
-   "end": 282.41,
+   "end": 284.82,
    "limit": 298.6,
    "fits": true
   },
   {
    "id": "supply",
    "start": 304.6,
-   "end": 322.88,
+   "end": 324.49,
    "limit": 342.6,
    "fits": true
   },
   {
    "id": "frontier",
    "start": 348.6,
-   "end": 359.7,
+   "end": 361.92,
    "limit": 380.6,
    "fits": true
   },
   {
    "id": "winter",
    "start": 386.6,
-   "end": 397.94,
+   "end": 399.97,
    "limit": 405.6,
    "fits": true
   }

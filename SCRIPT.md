@@ -22,12 +22,28 @@ Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F
 ## Soundtrack
 `audio/soundtrack.m4a` plays in sync with the film: narration plus a low backing drone. The film follows the audio clock, so scrubbing and chapter jumps stay aligned. **M** toggles sound; `?mute=1` starts silent.
 
-- **Voice:** macOS "Daniel" (British English, newsreader style) at 165 wpm, with short beats after each sentence. Each line starts as its chapter card clears (`audio/cues.json` lists the exact times; every line fits its chapter).
-- **Backing:** a synthesized low drone. The key shifts lower chapter by chapter (it brightens briefly for Lifeline), with a filtered rumble underneath. Low impacts land when Kyiv goes dark, on the title, and at Occupation, Shelling, Supply and Frontier. The drone dips ~8 dB whenever the voice speaks.
-- **Levels:** the voice sits around −20 dBFS RMS. The backing is ~12 dB under it in pauses and ~20 dB under it during speech.
-- **Separate stems for editing** (local only, not on GitHub): `audio/narration.wav`, `audio/backing.wav`, `audio/soundtrack.wav`.
-- **Rebuild after editing narration or timing in `story.js`:** `cd audio && python3 build_audio.py`. Options: `--voice "Jamie (Premium)"`, `--rate 160`, `--music-db -17`, `--duck-db -8`.
-- **Better voice:** install an Enhanced/Premium voice in System Settings → Accessibility → Spoken Content → System Voice → Manage Voices (e.g. Daniel (Enhanced), Jamie (Premium), Serena (Premium)), then rebuild with `--voice`. For a final cut, a recorded human read over `backing.wav` will sound best.
+### Voice engines (`audio/build_audio.py`)
+| Engine | Command | Notes |
+|---|---|---|
+| **Kokoro** (current track) | `python3 build_audio.py --engine kokoro` | Open-source Kokoro-82M, runs locally, free; nothing leaves your Mac. Default voice `bm_george`. Other British voices: `bm_daniel`, `bm_lewis`, `bm_fable`, `bf_emma`, `bf_isabella`. `--speed 0.95` |
+| **ElevenLabs** | `export ELEVENLABS_API_KEY=…` then `python3 build_audio.py --engine elevenlabs` | Most broadcast-like. `--voice daniel` (British news presenter, default) or `--voice george`, or any voice ID. The script (~2,000 characters) fits the free tier. The text is sent to ElevenLabs |
+| macOS `say` | `python3 build_audio.py --engine say --voice "Jamie (Premium)"` | Built in. Install Premium voices under System Settings → Accessibility → Spoken Content |
+
+- **Cache:** rendered lines are cached in `audio/cache/`, so re-runs only render changed lines. This means ElevenLabs credits are spent once per line.
+- **Outputs:** each build writes `soundtrack.m4a` (what the film plays) and keeps `soundtrack-<engine>.m4a` for side-by-side comparison. Switch back by rebuilding with the other engine; cached lines make that instant.
+- **Pronunciation:** the `PRON` table fixes engine-specific readings. For Kokoro: ZNPP as "zed‑en‑pee‑pee", Kyiv as "KEE‑iv", Kakhovka as "ka‑HOV‑ka". Add entries there if a name sounds wrong.
+- **Voice samples:** `audio/samples/kokoro-*.wav` hold the same two sentences in four Kokoro voices for auditioning.
+- **Timing check:** every line must fit its chapter; the build prints `ok` or `OVERRUNS` per line. The current Kokoro read fits all 12.
+- **Backing:** a synthesized low drone that darkens chapter by chapter, with impacts when Kyiv goes dark, on the title, and at Occupation, Shelling, Supply and Frontier. It ducks ~8 dB under the voice. Tune with `--music-db -17 --duck-db -8`.
+- **Stems for editing** (local only): `narration.wav`, `backing.wav`, `soundtrack.wav`.
+
+### Kokoro setup on a new machine
+```
+brew install espeak-ng
+cd audio && uv venv --python 3.12 .venv-kokoro
+uv pip install --python .venv-kokoro/bin/python "kokoro>=0.9" soundfile "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
+```
+The first run downloads the model (~330 MB) from Hugging Face. `kokoro_tts.py` points the phonemizer at Homebrew's espeak-ng, because the pip wheel ships without its data on macOS.
 
 ## Recording
 1. **Do a warm-up run first.** Play the whole film once, or scrub through every chapter. The satellite and terrain tiles come from the internet, and on a first pass they load in visibly. The second pass plays from the browser cache.
