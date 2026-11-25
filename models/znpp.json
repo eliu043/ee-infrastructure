@@ -1,0 +1,158 @@
+{
+ "file": "znpp.glb",
+ "origin_lnglat": [
+  34.5881,
+  47.5102
+ ],
+ "base_elevation_m": 30.35,
+ "frame": "glTF Y-up: +x east, +y up, +z south; metres; y relative to the terrain at the origin",
+ "ground_attribute": "_GROUND: each vertex's terrain height relative to the origin's (m); lift by (exaggeration - 1) x _GROUND",
+ "terrain": "AWS Terrain Tiles (terrarium) z14, the DEM the film draws",
+ "extent_m": {
+  "x": [
+   -1671.934814453125,
+   3784.2958984375
+  ],
+  "north": [
+   -1647.1767578125,
+   1609.4420166015625
+  ],
+  "up": [
+   -18.55018424987793,
+   363.3681335449219
+  ]
+ },
+ "kept_bbox": [
+  34.562,
+  47.4955,
+  34.6385,
+  47.527
+ ],
+ "osm_elements_kept": 593,
+ "materials": {
+  "concrete, grey": [
+   0.3,
+   0.295,
+   0.27
+  ],
+  "wall panels, pale": [
+   0.46,
+   0.455,
+   0.42
+  ],
+  "containment, red-brown paint, weathered": [
+   0.2,
+   0.045,
+   0.03
+  ],
+  "containment's crown, pale": [
+   0.42,
+   0.4,
+   0.36
+  ],
+  "vent stack, white, weathered": [
+   0.52,
+   0.51,
+   0.48
+  ],
+  "paint red, weathered": [
+   0.3,
+   0.032,
+   0.022
+  ],
+  "cooling tower concrete, rust-brown": [
+   0.15,
+   0.075,
+   0.045
+  ],
+  "cooling tower's pale bands": [
+   0.36,
+   0.3,
+   0.24
+  ],
+  "thermal plant chimney, dark": [
+   0.075,
+   0.065,
+   0.06
+  ],
+  "town walls, panel concrete": [
+   0.36,
+   0.35,
+   0.32
+  ],
+  "flat roofs, bitumen": [
+   0.12,
+   0.12,
+   0.115
+  ],
+  "greenhouse glass": [
+   0.38,
+   0.42,
+   0.42
+  ],
+  "tanks, pale": [
+   0.5,
+   0.5,
+   0.47
+  ]
+ },
+ "source": "frame-geo-evidence-pipeline src/image_evidence/satellite/scene3d/plant.py (plant.build: solid, as-photographed colours; not the ghosted shot)",
+ "osm": "libraries/conductive-seam/satellite/networks/znpp/scenes/crossing3d/raw/osm_plant.json, © OpenStreetMap contributors (ODbL)",
+ "counts": {
+  "units": 6,
+  "buildings": 278,
+  "heights": {
+   "osm_height": 1,
+   "osm_levels": 53,
+   "typical": 224
+  },
+  "stacks": 6,
+  "chimneys": 4,
+  "cooling_towers": 2
+ },
+ "heights": {
+  "containment": {
+   "r_m": 22.5,
+   "cylinder_top_m": 58.5,
+   "dome_top_m": 66.45
+  },
+  "unit_box_m": "OSM's height (40 m)",
+  "vent_stacks_m": 105.0,
+  "special_chimney_m": 100.0,
+  "cooling_towers_m": 125.0,
+  "storey_m": 3.0,
+  "typical_m": {
+   "apartments": 27.0,
+   "industrial": 12.0,
+   "warehouse": 8.0,
+   "garages": 3.0,
+   "garage": 3.0,
+   "roof": 5.0,
+   "greenhouse": 4.0,
+   "school": 12.0,
+   "kindergarten": 7.0,
+   "hospital": 15.0,
+   "public": 12.0,
+   "commercial": 9.0,
+   "retail": 6.0,
+   "service": 4.0,
+   "house": 6.0,
+   "detached": 6.0,
+   "storage_tank": 12.0,
+   "construction": 6.0,
+   "ruins": 3.0,
+   "yes": 6.0
+  },
+  "site_m": 15.0,
+  "turbine_halls": {
+   "from_m": 33.0,
+   "length_m": 155.0,
+   "half_width_m": 30.0,
+   "height_m": 34.0,
+   "bay_width_m": 30.0,
+   "bay_height_m": 24.0
+  }
+ },
+ "statement": "Massing, not a survey. Places and footprints from OpenStreetMap; heights from OSM's tags and the sources named, else a building's storeys (3 m each) or a representative height for its kind. The units' turbine halls and bays aren't mapped: placed from the 10 m imagery and photographs. Shapes and colours representative, as photographed. The fire damage to cooling tower no. 1 (11 August 2024, mostly inside it) and the switchyards' gantries are not drawn.",
+ "generated_by": "tools/export_plant_glb.py"
+}
