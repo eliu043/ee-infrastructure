@@ -1,12 +1,14 @@
-/* POWERLINES — scene script (v3: Kyiv cold open → ZNPP → supply → frontier → winter).
+/* Infrastructure: Instruments of Power — scene script (v3: Kyiv cold open → ZNPP → supply → frontier → winter).
    Edit freely: durations (s), camera keyframes, callouts, captions.
    Camera keyframe: {t: seconds into scene, c:[lng,lat], z: zoom, p: pitch, b: bearing, e: 'io'|'lin'|'out'|'in'}
    Callout: {t, d (duration), ll:[lng,lat], title, sub, h (stem px), side: 'c'|'l'|'r'}
    layers: target opacity per named layer for the scene (anything omitted fades to 0).
+   plantModel: the plant's 3D massing model (models/znpp.glb); it also fades out by itself below zoom ~12.
    imagerySeq: [[t, layer], ...] crossfades base imagery (2 s) — s2021, s2023, s2024, s2025, esri, dnb20260124 (VIIRS night, 24 Jan 2026).
    stamps: [[t, text], ...] changes the top-right stamp during a scene.
    routeKinds: which analysed routes to draw ('diesel', 'crew-ua', 'crew-ru').
    titleCard: true or {t0, t1}; capUntil: hide the caption after this many seconds.
+   sources: full citation for the scene · credit: the short version shown bottom-left while the slide is on.
    Total runtime = sum of durations (currently 7:00). Keep each scene's first camera keyframe equal
    to the previous scene's last one, or the cut will jump. Bearings turn the short way round. */
 
@@ -38,9 +40,9 @@ const C = {
 const at = (t, k, e) => ({ t, ...k, e });
 
 window.STORY = {
-  title: 'POWERLINES',
+  title: 'Infrastructure: Instruments of Power', // text after ':' becomes the second line of the opening title
   exaggeration: 6,            // vertical exaggeration in wide shots (shown on screen)
-  exaggerationClose: 1.5,     // …easing to this in close-ups (zoom ≥ 13) so lines don't wobble on the surface model
+  exaggerationClose: 1,       // …easing to true scale in close-ups (zoom ≥ 13); above 1 the elevation data warps buildings and riverbanks
   places: P,
   scenes: [
   /* COLD OPEN · KYIV ────────────────────────────── */
@@ -59,10 +61,11 @@ window.STORY = {
       { t: 14.5, d: 13, ll: P.kyiv, title: 'Kyiv · 31 January 2026', sub: 'Blackout for a few hours', h: 90 },
     ],
     sources: 'VIIRS Day/Night Band, NOAA-20 (NASA GIBS), 24 Jan 2026, ~01:30 local. The fade to dark is an illustration: the 31 Jan pass is moonlit snow and cannot show the outage',
+    credit: 'Night pass: VIIRS NOAA-20, 24 Jan 2026 · darkening is illustrative',   // short line for the bottom-left credits
   },
   /* HOSTAGE · FLIGHT TO ZNPP + TITLE ────────────── */
   {
-    id: 'hostage', chapter: '', name: 'POWERLINES', dur: 28,
+    id: 'hostage', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 28,
     vo: 'Hidden in plain sight is the slow violence of infrastructural warfare as Ukraine’s energy facilities are being held hostage.',
     capUntil: 14,
     titleCard: { t0: 15, t1: 27.5 },
@@ -77,13 +80,14 @@ window.STORY = {
       { t: 6, d: 9, ll: P.znpp, title: 'Zaporizhzhia NPP', sub: 'Occupied since March 2022', h: 70 },
     ],
     sources: 'Night lights: NASA Black Marble (2016, pre-war baseline)',
+    credit: 'Night lights: NASA Black Marble 2016',   // short line for the bottom-left credits
   },
   /* 01 ─────────────────────────────────────────── */
   {
     id: 'lifeline', chapter: '01', name: 'Lifeline', dur: 30,
     stamp: 'PEACETIME · 1984–2022',
     vo: "During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat.",
-    layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1 },
+    layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1, plantModel: 1 },
     flow: 1,
     cam: [
       at(0, C.hostageEnd),
@@ -98,13 +102,14 @@ window.STORY = {
       { t: 21, d: 8, ll: [34.58, 47.535], title: '750 kV / 330 kV export lines', sub: 'Roughly a fifth of national generation', h: 60, side: 'l' },
     ],
     sources: 'Lines: OpenStreetMap (power=line, ≥150 kV) · Imagery: Sentinel-2 cloudless 2021, EOX',
+    credit: 'Lines: OpenStreetMap',   // short line for the bottom-left credits
   },
   /* 02 ─────────────────────────────────────────── */
   {
     id: 'occupation', chapter: '02', name: 'Occupation', dur: 26,
     stamp: '04 · 03 · 2022',
     vo: 'After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion.',
-    layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1 },
+    layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1, plantModel: 1 },
     cam: [
       at(0, C.lifelineEnd),
       { t: 9, c: [34.5, 47.53], z: 10.2, p: 55, b: 200, e: 'io' },
@@ -117,13 +122,14 @@ window.STORY = {
       { t: 14, d: 11, ll: [34.47, 47.535], title: 'Frontline', sub: 'Runs along the Dnipro / Kakhovka reservoir', h: 110, side: 'l' },
     ],
     sources: 'Reservoir outline: OSM, 2023-05-01 · Frontline drawn schematically along the river',
+    credit: 'Reservoir: OSM · frontline schematic',   // short line for the bottom-left credits
   },
   /* 03 ─────────────────────────────────────────── */
   {
     id: 'draw', chapter: '03', name: 'It cannot be switched off', dur: 24,
     stamp: 'COLD SHUTDOWN · SINCE SEPT 2022',
     vo: 'Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor.',
-    layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4 },
+    layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4, plantModel: 1 },
     cam: [
       at(0, C.occEnd),
       { t: 9, c: [34.60, 47.505], z: 13.2, p: 60, b: 200, e: 'io' },
@@ -141,7 +147,7 @@ window.STORY = {
     id: 'water', chapter: '04', name: 'Water', dur: 60,
     stamp: '2021',
     vo: 'Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plant’s canals depleted.',
-    layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0 },
+    layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0, plantModel: 1 },
     imagerySeq: [[0, 's2021'], [12, 's2023'], [27, 's2024'], [35, 'esri'], [48, 's2025']],
     overlaySeq: [[0, null], [15.5, 'ndvi-2021'], [19.5, 'ndvi-2025'], [23.5, 'ndmi-change'], [28, null]],
     stamps: [[0, '2021 · RESERVOIR FULL'], [11.5, 'JUNE 2023 · DAM DESTROYED'], [15.5, 'VEGETATION · 2021'], [19.5, 'VEGETATION · 2025'], [23.5, 'DRYING · 2024–26 vs 2019–22'],
@@ -170,6 +176,7 @@ window.STORY = {
       { t: 51, d: 9, ll: [34.556, 47.502], title: 'Pond water down about a third since 2023', sub: 'Sentinel-2, to Oct 2026 · McKenzie: 9.60 → 8.66 km², 2022–25 · intake dam, 2025', h: 70, side: 'l' },
     ],
     sources: 'Sentinel-2 (Google Earth Engine): late-summer NDVI / NDMI composites, monthly water area · Imagery: Sentinel-2 cloudless (EOX), Esri · Wells: IAEA via NEI (2023) · Pond area 2022–25: McKenzie Intelligence / Greenpeace Ukraine',
+    credit: 'Sentinel-2 via Google Earth Engine · wells: IAEA via NEI · pond 2022–25: McKenzie Intelligence / Greenpeace Ukraine',   // short line for the bottom-left credits
   },
   /* 05 ─────────────────────────────────────────── */
   {
@@ -187,13 +194,14 @@ window.STORY = {
       { t: 6, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Disconnected · waiting', h: 70, side: 'l' },
     ],
     sources: 'Dashed arrow is schematic — no planned route is shown',
+    credit: 'Arrow schematic: no planned route',   // short line for the bottom-left credits
   },
   /* 06 ─────────────────────────────────────────── */
   {
     id: 'repair', chapter: '06', name: 'Shelling and repair', dur: 64,
     stamp: '',   // driven by the timeline
     vo: 'In the meantime, Russia’s shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force.',
-    layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9 },
+    layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9, plantModel: 1 },
     routeKinds: ['crew-ua', 'crew-ru'],
     flow: 1,
     dates: [[0, '2022-03-04'], [3, '2022-03-04'], [21.3, '2025-06-01'], [61.2, '2026-11-24'], [64, '2026-11-24']],
@@ -220,13 +228,14 @@ window.STORY = {
       { t: 60.4, d: 3.6, ll: P.tpp, title: 'Z2 · switchyard', sub: 'Backup transformer destroyed again, Nov 2026', h: 70 },
     ],
     sources: 'Outages: IAEA updates via WNA (compiled 2026-11-19) · Damage zones: our reading of IAEA locations (approximate) · Crew routes: OSM shortest road distance',
+    credit: 'Outages: IAEA via WNA · damage zones approximate · crew routes: OSM',   // short line for the bottom-left credits
   },
   /* 07 ─────────────────────────────────────────── */
   {
     id: 'dependency', chapter: '07', name: 'Sovereignty becomes dependency', dur: 32,
     stamp: 'POWER FLOWS IN',
     vo: 'Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns.',
-    layers: { esri: 1, hillshade: 0.2, plant: 1, znpp: 1, particles: 1 },
+    layers: { esri: 1, hillshade: 0.2, plant: 1, znpp: 1, particles: 1, plantModel: 1 },
     flow: -1,
     cam: [
       at(0, C.repairEnd),
@@ -243,7 +252,7 @@ window.STORY = {
     id: 'supply', chapter: '08', name: 'Blackout and supply', dur: 40,
     stamp: 'COMPLETE BLACKOUTS · 2022–2024',
     vo: 'During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia’s shelling of roads and railways.',
-    layers: { s2024: 0.8, hillshade: 0.35, plant: 1, roads: 1, routes: 1, trucks: 1, rail: 1, railDisused: 1, supplyEvents: 1, frontline: 0.6, counter: 1 },
+    layers: { s2024: 0.8, hillshade: 0.35, plant: 1, roads: 1, routes: 1, trucks: 1, rail: 1, railDisused: 1, supplyEvents: 1, frontline: 0.6, counter: 1, plantModel: 1 },
     routeKinds: ['diesel'],
     counter: { n: 8, t0: 2.7, t1: 9.1, label: 'COMPLETE BLACKOUTS, 2022–2024 · ALL OFF-SITE POWER LOST', note: '27 by November 2026 · IAEA' },
     stamps: [[0, 'COMPLETE BLACKOUTS · 2022–2024'], [12.7, 'SUPPLY BY ROAD · OSM 2026']],
@@ -262,6 +271,7 @@ window.STORY = {
       { t: 30, d: 9.1, ll: [34.78, 47.42], title: 'Last 30 km within 20 km of the river front', sub: 'Shortest route, OSM network', h: 60, side: 'r' },
     ],
     sources: 'Blackouts: IAEA count · Roads & rail: OpenStreetMap, 24 Nov 2026 · Events: UCDP GED 26.1 + candidate 2026, fatal events only · Routes are shortest road distance, not observed convoys',
+    credit: 'Blackouts: IAEA · roads & rail: OSM · events: UCDP GED · routes modelled, not observed',   // short line for the bottom-left credits
   },
   /* 09 ─────────────────────────────────────────── */
   {
@@ -290,6 +300,7 @@ window.STORY = {
       { t: 21, d: 11, ll: P.marhanets, title: 'Marhanets', sub: 'Across the drained reservoir', h: 70, side: 'r' },
     ],
     sources: 'Fortifications: traced from McKenzie Intelligence / Greenpeace Ukraine (Pléiades Neo, Jun–Oct 2025), approximate · Events: UCDP GED, fatal events only (n = 829)',
+    credit: 'Fortifications traced from McKenzie Intelligence / Greenpeace Ukraine · events: UCDP GED (fatal only)',   // short line for the bottom-left credits
   },
   /* 10 ─────────────────────────────────────────── */
   {
@@ -308,13 +319,14 @@ window.STORY = {
       { t: 12, d: 12, ll: P.kharkiv, title: 'Kharkiv', sub: '', h: 30 },
       { t: 13, d: 11, ll: P.odesa, title: 'Odesa', sub: '', h: 30 },
       { t: 14, d: 10, ll: P.dnipro, title: 'Dnipro', sub: '', h: 30 },
-      { t: 15, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50 },
+      { t: 15, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50, side: 'l' },
     ],
     sources: 'Lights dimmed for illustration — baseline NASA Black Marble 2016; not a measurement of 2026 outages',
+    credit: 'Dimming illustrative · NASA Black Marble 2016',   // short line for the bottom-left credits
   },
   /* END ─────────────────────────────────────────── */
   {
-    id: 'end', chapter: '', name: 'POWERLINES', dur: 14,
+    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 14,
     stamp: '', vo: '', capUntil: 1,
     endCard: true,
     layers: { lights: 0.12, s2024: 0.18, plant: 1, beacon: 1 },

@@ -5,3 +5,4 @@ audio/.venv-kokoro/
 audio/cache/
 audio/samples/
 audio/soundtrack-*.m4a
+tools/.cache/

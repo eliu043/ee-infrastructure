@@ -1,4 +1,4 @@
-# POWERLINES — 7:00 film script (v3)
+# Infrastructure: Instruments of Power — 7:00 film script
 
 A narrated web film. Camera, callouts and data animations are all driven by one clock, so every take is identical. Edit `story.js` to change timing, camera or text. `film.js` is the engine.
 
@@ -9,15 +9,22 @@ python3 -m http.server 8765
 ```
 Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F** for fullscreen.
 
-| Key | Action |
+The site opens on the centred title, which fades after a few seconds into a compact story panel at the top left (click or press any key to skip ahead). Each chapter is one slide: it plays its camera move and data animation, then holds until you continue. Moving forwards, backwards or jumping from the slide list always glides the camera from where it is.
+
+| Control | Action |
 |---|---|
-| Space | play / pause |
-| ← → | previous / next chapter |
-| Home | restart |
-| C | captions (your narration on screen) |
-| P | presenter mode: holds at the end of each chapter until you press → or Space |
-| R | record mode: hides the control bar |
-| URL | `?t=95` start at 95 s · `?scene=repair` · `?rec=1` · `?nocap=1` |
+| **Next ›** / → / PageDown | next slide (Space also continues once a slide has finished) |
+| **‹ Back** / ← / PageUp | previous slide |
+| **3 / 13** / L | slide list; click a slide to jump to it |
+| 🔈 button / M | narration on/off (the soundtrack pauses when a slide holds and follows you when you jump) |
+| ❚❚ button / Space | pause / play the current slide · replay it once it has finished |
+| Red line above the buttons | the slide's progress; click or drag it to scrub |
+| A | autoplay: run straight on into the next slide (the old continuous film) |
+| R | record mode: hides the panel and legend, shows full-screen captions, chapter cards and title, autoplay on |
+| C | captions on/off (record mode) |
+| F | fullscreen |
+| Home / End | first / last chapter |
+| URL | `#repair` opens that slide and skips the opening title (the address updates as you go) · `?t=95` · `?scene=repair` · `?rec=1` · `?nocap=1` · `?paused` · `?mute=1` |
 
 ## Soundtrack
 `audio/soundtrack.m4a` plays in sync with the film: narration plus a low backing drone. The film follows the audio clock, so scrubbing and chapter jumps stay aligned. **M** toggles sound; `?mute=1` starts silent.
@@ -48,7 +55,7 @@ The first run downloads the model (~330 MB) from Hugging Face. `kokoro_tts.py` p
 ## Recording
 1. **Do a warm-up run first.** Play the whole film once, or scrub through every chapter. The satellite and terrain tiles come from the internet, and on a first pass they load in visibly. The second pass plays from the browser cache.
 2. Record with OBS or QuickTime (screen + system audio for the built-in soundtrack, or screen + mic to narrate live with M muting the voice track), using `?rec=1`.
-   - **Voice live over picture:** use presenter mode (P) and advance after each paragraph.
+   - **Voice live over picture:** in record mode press A to turn autoplay off; each chapter then holds at its end until you press →.
    - **Voice-over recorded separately:** play straight through, then lay the audio over it in Premiere.
 3. Captions can stay on as subtitles. Turn them off (C) if you'd rather read from this sheet.
 
