@@ -1,4 +1,4 @@
-# POWERLINES — 7:00 film script
+# Infrastructure: Instruments of Power — 7:00 film script
 
 A narrated web film. Camera, callouts and data animations are all driven by one clock, so every take is identical. Edit `story.js` to change timing, camera or text. `film.js` is the engine.
 
@@ -9,22 +9,21 @@ python3 -m http.server 8765
 ```
 Open http://localhost:8765 in Chrome. Set the window to 1920×1080, or press **F** for fullscreen.
 
-The site is a guided walkthrough: a glass story panel on the left, one slide per chapter. Each slide plays its camera move and data animation, then holds until you continue. Moving forwards, backwards, or jumping from the slide list always glides the camera from where it is, so there are no hard cuts.
+The site opens on the centred title, which fades after a few seconds into a compact story panel at the top left (click or press any key to skip ahead). Each chapter is one slide: it plays its camera move and data animation, then holds until you continue. Moving forwards, backwards or jumping from the slide list always glides the camera from where it is.
 
 | Control | Action |
 |---|---|
 | **Next ›** / → / PageDown | next slide (Space also continues once a slide has finished) |
 | **‹ Back** / ← / PageUp | previous slide |
-| **≡ 3 / 10** / M | slide list; click any slide to jump to it |
-| Space | pause / play the current slide · replay it once it has finished |
-| Scrubber in the panel | scrub within the current slide |
-| "On the map" items | click to jump to that moment in the slide |
-| A / **AUTO** | autoplay: run straight on into the next slide (the old continuous film) |
-| R | record mode: hides the panel and legend, shows the original cinematic captions, chapter cards and title, autoplay on |
+| **3 / 9** / M | slide list; click a slide to jump to it |
+| ❚❚ button / Space | pause / play the current slide · replay it once it has finished |
+| Red line above the buttons | the slide's progress; click or drag it to scrub |
+| A | autoplay: run straight on into the next slide (the old continuous film) |
+| R | record mode: hides the panel and legend, shows full-screen captions, chapter cards and title, autoplay on |
 | C | captions on/off (record mode) |
 | F | fullscreen |
-| Home / End | first / last slide |
-| URL | `#repair` opens that slide (the address updates as you go) · `?t=95` start at 95 s · `?scene=repair` · `?rec=1` · `?nocap=1` · `?paused` |
+| Home / End | first / last chapter |
+| URL | `#repair` opens that slide and skips the opening title (the address updates as you go) · `?t=95` · `?scene=repair` · `?rec=1` · `?nocap=1` · `?paused` |
 
 ## Recording
 1. **Do a warm-up run first.** Play the whole film once, or scrub through every chapter. The satellite and terrain tiles come from the internet, and on a first pass they load in visibly. The second pass plays from the browser cache.
@@ -38,7 +37,7 @@ Your narration runs about 2½ minutes at a measured pace. The other ~4½ minutes
 
 | Time | Chapter | Narration (yours, verbatim) | What's on screen |
 |---|---|---|---|
-| 0:00 | Title | *(silence / ambient)* | Pre-war Ukraine at night (Black Marble 2016), slow descent, POWERLINES title |
+| 0:00 | Title | *(silence / ambient)* | Pre-war Ukraine at night (Black Marble 2016), slow descent, centred title (fades after ~4 s, then the story panel appears) |
 | 0:25 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Flight down to the plant. High-voltage grid pulses outward, particles flow out along both ZNPP lines. Callouts: ZNPP, Enerhodar heat, thermal plant switchyard |
 | 1:10 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Pull back. The reservoir becomes the frontline zone (red tint, dashed edge). Nikopol and Marhanets on the right bank |
 | 1:50 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Cold shutdown, cooling pond, labor. Imagery crossfades 2021 → 2024 as the Kakhovka reservoir drains. Glide downstream to the destroyed dam |

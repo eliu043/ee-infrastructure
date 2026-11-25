@@ -1,4 +1,4 @@
-/* POWERLINES — scene script.
+/* Infrastructure: Instruments of Power — scene script.
    Edit freely: durations (s), camera keyframes, callouts, captions.
    Camera keyframe: {t: seconds into scene, c:[lng,lat], z: zoom, p: pitch, b: bearing, e: 'io'|'lin'|'out'|'in'}
    Callout: {t, d (duration), ll:[lng,lat], title, sub, h (stem px), side: 'c'|'l'|'r', ring: px}
@@ -14,14 +14,14 @@ const P = {
 };
 
 window.STORY = {
-  title: 'POWERLINES',
+  title: 'Infrastructure: Instruments of Power',   // shown centred at the start; text after ':' becomes the second line
   exaggeration: 6,            // vertical exaggeration in wide shots (shown on screen)
   exaggerationClose: 1.5,     // …easing to this in close-ups (zoom ≥ 13) so lines don't wobble on the surface model
   places: P,
   scenes: [
   /* 00 ─────────────────────────────────────────── */
   {
-    id: 'title', chapter: '', name: 'POWERLINES', dur: 25,
+    id: 'title', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 25,
     stamp: '', vo: '',
     titleCard: true,
     layers: { lights: 1, s2021: 0.25, hillshade: 0.25 },
@@ -208,7 +208,7 @@ window.STORY = {
   },
   /* 09 ─────────────────────────────────────────── */
   {
-    id: 'end', chapter: '', name: 'POWERLINES', dur: 35,
+    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 35,
     capUntil: 22,
     stamp: '',
     vo: 'POWERLINES traces the slow violence of war through the militarization of energy infrastructure. By following the disruption of electricity, water, and territory, it examines how the occupation of critical infrastructure contests sovereignty, reorganizes material dependencies, and drains the resources needed to sustain everyday life.',

@@ -1,4 +1,4 @@
-/* POWERLINES film engine. Deterministic: everything is a function of the master clock T,
+/* Infrastructure: Instruments of Power — film engine. Deterministic: everything is a function of the master clock T,
    so scrubbing / re-recording always gives the same shot. Content lives in story.js. */
 (() => {
 const D = window.PL_DATA, X = window.PL_EXTRA || {}, ST = window.STORY, P = ST.places;
@@ -258,114 +258,84 @@ const dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,
 let dashStep = -1;
 
 /* ---------- HUD ---------- */
-const N = ST.scenes.length, NCH = ST.scenes.filter(s => s.chapter).length;
+const N = ST.scenes.length;
+const FIRST = ST.scenes[0].titleCard ? 1 : 0; // the title scene is the opening, not a slide
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const pad2 = n => String(n).padStart(2, '0');
-const fmtS = s => { s = Math.floor(s + 0.01); return `${Math.floor(s / 60)}:${pad2(s % 60)}`; };
-const navName = sc => sc.titleCard ? 'Introduction' : sc.endCard ? 'Closing' : sc.name;
 const isRec = () => document.body.classList.contains('rec');
 const CREDITS = 'IAEA updates via World Nuclear Association · UCDP GED · OpenStreetMap · Sentinel-2 cloudless (EOX) · Esri World Imagery · NASA Black Marble · AWS Terrain Tiles';
+const ttlHTML = (() => { const [a, ...b] = ST.title.split(':'); return b.length ? `<span class="a">${esc(a)}:</span><span class="b">${esc(b.join(':').trim())}</span>` : `<span class="a">${esc(a)}</span>`; })();
+$('#intro .ttl').innerHTML = ttlHTML; $('#title .ttl').innerHTML = ttlHTML;
 
 let stampCache = '';
-function setStamp(v, sub = '') {
-  const k = v + '|' + sub; if (k === stampCache) return; stampCache = k;
+function setStamp(v) {
+  if (v === stampCache) return; stampCache = v;
   const el = $('#dateline'); if (!el) return;
-  el.classList.toggle('none', !v); el.querySelector('.v').textContent = v; el.querySelector('.s').textContent = sub;
+  el.classList.toggle('none', !v); el.textContent = v;
 }
 let capOn = !qs.has('nocap'), auto = false, plantAlarm = 0;
 
-/* ---------- legend (built from the layers each slide turns on) ---------- */
+/* ---------- legend (from the layers each slide turns on) ---------- */
 const sw = {
-  line: (c, w = 2, st = 'solid', glow) => `<i style="display:block;width:22px;border-top:${w}px ${st} ${c};${glow ? `box-shadow:0 0 6px ${c}` : ''}"></i>`,
-  fill: (bg, bd = '1px solid transparent') => `<i style="display:block;width:20px;height:11px;border-radius:2px;background:${bg};border:${bd}"></i>`,
+  line: (c, w = 2, st = 'solid', glow) => `<i style="display:block;width:20px;border-top:${w}px ${st} ${c};${glow ? `box-shadow:0 0 6px ${c}` : ''}"></i>`,
+  fill: (bg, bd = '1px solid transparent') => `<i style="display:block;width:18px;height:10px;background:${bg};border:${bd}"></i>`,
   dot: (c, r = 8, ring) => `<i style="display:block;width:${r}px;height:${r}px;border-radius:50%;${ring ? `border:1.5px solid ${c}` : `background:${c};box-shadow:0 0 6px ${c}`}"></i>`,
-  kv: () => `<i style="display:grid;gap:2px;width:22px"><b style="border-top:2.4px solid #ff4d3a"></b><b style="border-top:1.8px solid #ffb648"></b><b style="border-top:1px solid #e7d27c"></b></i>`,
+  kv: () => `<i style="display:grid;gap:2px;width:20px"><b style="border-top:2.4px solid #ff4d3a"></b><b style="border-top:1.8px solid #ffb648"></b><b style="border-top:1px solid #e7d27c"></b></i>`,
 };
 const has = fc => fc && fc.features && fc.features.length > 0;
 const LEGEND = [
-  ['plant', sw.dot('#fff', 11, true), 'Zaporizhzhia NPP'],
-  ['znpp', sw.line('#ff6a55', 3, 'solid', 1), 'ZNPP line · 750 kV Dniprovska'],
-  ['znpp', sw.line('#ffc56a', 3, 'solid', 1), 'ZNPP line · 330 kV Ferosplavna-1'],
-  ['particles', sw.dot('#ffd1c8', 6), 'Direction of power flow'],
+  ['plant', sw.dot('#fff', 10, true), 'Zaporizhzhia NPP'],
+  ['znpp', sw.line('#ff6a55', 3, 'solid', 1), '750 kV Dniprovska line'],
+  ['znpp', sw.line('#ffc56a', 3, 'solid', 1), '330 kV Ferosplavna-1 line'],
+  ['particles', sw.dot('#ffd1c8', 6), 'Power flow'],
   ['grid', sw.kv(), 'Grid · 750 / 330 / 150 kV'],
-  ['zones', sw.fill('rgba(255,45,85,.4)', '1px solid #ff2d55'), 'Damage zone (approximate)'],
-  ['frontline', sw.fill('rgba(255,45,85,.14)', '1px dashed rgba(255,255,255,.8)'), 'Frontline along the river (schematic)'],
-  ['reservoir', sw.fill('rgba(92,200,255,.4)'), 'Kakhovka reservoir, May 2023'],
-  ['proposed', sw.line('#fff', 2, 'dashed'), 'Link to Russian grid (schematic)'],
-  ['ucdp', sw.fill('linear-gradient(#ff0f4f,#ff9a7a)'), 'UCDP fatal events · height = count'],
-  ['trenches', sw.line('#ffdf6b', 1.5), 'Trench lines', () => has(X.trenches)],
-  ['artillery', sw.dot('#ffdf6b', 7), 'Artillery positions', () => has(X.artillery)],
-  ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights · NASA Black Marble 2016'],
+  ['zones', sw.fill('rgba(255,45,85,.4)', '1px solid #ff2d55'), 'Damage zone (approx.)'],
+  ['frontline', sw.fill('rgba(255,45,85,.14)', '1px dashed rgba(255,255,255,.8)'), 'Frontline (schematic)'],
+  ['reservoir', sw.fill('rgba(92,200,255,.4)'), 'Kakhovka reservoir, 2023'],
+  ['proposed', sw.line('#fff', 2, 'dashed'), 'Russian grid link (schematic)'],
+  ['ucdp', sw.fill('linear-gradient(#ff0f4f,#ff9a7a)'), 'UCDP fatal events'],
+  ['trenches', sw.line('#ffdf6b', 1.5), 'Trenches', () => has(X.trenches)],
+  ['artillery', sw.dot('#ffdf6b', 7), 'Artillery', () => has(X.artillery)],
+  ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights, 2016'],
 ];
-let legcam = null;
 function buildLegend(sc) {
-  const rows = LEGEND.filter(([k, , , ok]) => (sc.layers[k] || 0) >= 0.3 && (!ok || ok()));
-  $('#legend').innerHTML = (rows.length ? `<div class="h">LEGEND</div>` + rows.map(([, s, l]) => `<div class="row"><span class="sw">${s}</span>${esc(l)}</div>`).join('') : '') + `<div class="cam" id="legcam"></div>`;
-  legcam = $('#legcam');
+  $('#legend').innerHTML = LEGEND.filter(([k, , , ok]) => (sc.layers[k] || 0) >= 0.3 && (!ok || ok()))
+    .map(([, s, l]) => `<div class="row"><span class="sw">${s}</span>${esc(l)}</div>`).join('');
 }
 
 /* ---------- story panel ---------- */
 function slideHTML(sc, dir) {
   const cls = `slide${dir < 0 ? ' back' : ''}`;
-  const date = `<div id="dateline" class="dateline none"><div class="v"></div><div class="s"></div></div>`;
-  const src = sc.sources ? `<div class="src"><b>SOURCES</b>${esc(sc.sources)}</div>` : '';
-  if (sc.titleCard) return `<div class="${cls} cover">
-    <div class="kicker">A narrated map <span>· ${NCH} chapters</span></div>
-    <h1>${esc(ST.title)}</h1><div class="rule"></div>
-    <p class="st">The militarization of energy infrastructure · Zaporizhzhia NPP</p>
-    <p class="cr">GSAPP · Advanced V Studio · Fall 2026</p>
-    <div class="hint"><kbd>←</kbd><kbd>→</kbd> move through the story <span style="color:var(--faint)">·</span> <kbd>Space</kbd> pause</div>${src}</div>`;
-  if (sc.endCard) return `<div class="${cls}">
-    <div class="kicker">Closing</div>
-    <h2>Slow violence · energy · water · territory</h2>${date}
-    <p class="lede">${esc(sc.vo)}</p>
-    <div class="sec"><div class="h">Sources</div><ul class="keys credits">${CREDITS.split(' · ').map(s => `<li class="on" style="cursor:default"><span class="n">—</span><div><small style="color:var(--ink2);margin:0">${esc(s)}</small></div></li>`).join('')}</ul></div>
-    <button class="restart" id="bRestart">↺&nbsp; Start again</button></div>`;
-  const keys = (sc.callouts || []).length ? `<div class="sec"><div class="h">On the map</div><ol class="keys" id="keys">${sc.callouts.map((c, i) =>
-    `<li data-i="${i}" tabindex="0"><span class="n">${pad2(i + 1)}</span><div><b>${esc(c.title)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div></li>`).join('')}</ol></div>` : '';
-  return `<div class="${cls}">
-    <div class="kicker">Chapter ${esc(sc.chapter)} <span>/ ${pad2(NCH)}</span></div>
-    <h2>${esc(sc.name)}</h2>${date}
-    <p class="lede">${esc(sc.vo)}</p>${keys}${src}</div>`;
+  if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div></div>`;
+  if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
+    <p class="lede">${esc(sc.vo)}</p><p class="src">${esc(CREDITS)}</p>
+    <button class="restart" id="bRestart">↺ Start again</button></div>`;
+  return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
+    <div id="dateline" class="dateline none"></div>
+    <p class="lede">${esc(sc.vo)}</p>${sc.sources ? `<p class="src">${esc(sc.sources)}</p>` : ''}</div>`;
 }
-let keyEls = [];
 function renderPanel(sc, dir) {
-  const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0; requestAnimationFrame(updateMore);
-  keyEls = [...pb.querySelectorAll('#keys li')];
-  keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i]; const jump = () => seekLocal(c.t + 0.05, true);
-    li.onclick = jump; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); jump(); } }; });
-  const r = $('#bRestart'); if (r) r.onclick = () => go(0);
-  $('#pg').textContent = `${cur + 1} / ${N}`;
-  $('#bBack').disabled = cur === 0; $('#bNext').disabled = cur === N - 1;
-  $('#bNext span').textContent = cur === 0 ? 'Begin' : 'Next';
-  [...$('#menu').querySelectorAll('a')].forEach((a, i) => { a.classList.toggle('cur', i === cur); if (i === cur) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
-}
-function updateMore() { const pb = $('#pbody'); pb.parentElement.classList.toggle('more', pb.scrollHeight - pb.clientHeight - pb.scrollTop > 24); }
-function updateKeys(sc, tl) {
-  keyEls.forEach(li => { const c = sc.callouts[+li.dataset.i], on = tl >= c.t && tl < c.t + c.d;
-    if (on && !li.classList.contains('on') && playing) { // keep the newest point in view in long lists
-      const pb = $('#pbody'), r = li.getBoundingClientRect(), b = pb.getBoundingClientRect();
-      if (r.bottom > b.bottom || r.top < b.top) pb.scrollTo({ top: pb.scrollTop + r.bottom - b.bottom + 44, behavior: 'smooth' }); }
-    li.classList.toggle('on', on); li.classList.toggle('seen', tl >= c.t + c.d); });
+  const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
+  const r = $('#bRestart'); if (r) r.onclick = () => go(FIRST);
+  $('#pg').textContent = `${Math.max(1, cur - FIRST + 1)} / ${N - FIRST}`;
+  $('#bBack').disabled = cur <= FIRST; $('#bNext').disabled = cur === N - 1;
+  $('#menu').querySelectorAll('a').forEach(a => { const on = +a.dataset.i === cur; a.classList.toggle('cur', on); on ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current'); });
 }
 function buildMenu() {
-  $('#menu').innerHTML = `<div class="mh">SLIDES</div>` + ST.scenes.map((sc, i) =>
-    `<a href="#${sc.id}" data-i="${i}"><span class="n">${sc.chapter || (i === 0 ? '00' : '—')}</span>${esc(navName(sc))}<span class="d">${fmtS(sc.dur)}</span></a>`).join('') +
-    `<div class="keyhelp"><kbd>←</kbd> <kbd>→</kbd> previous / next slide<br><kbd>Space</kbd> pause · continue when a slide has finished<br><kbd>A</kbd> autoplay through all slides · <kbd>M</kbd> this menu<br><kbd>F</kbd> fullscreen · <kbd>R</kbd> record mode (hides the panel)</div>`;
+  $('#menu').innerHTML = ST.scenes.slice(FIRST).map((sc, k) =>
+    `<a href="#${sc.id}" data-i="${k + FIRST}"><span class="n">${sc.chapter || '—'}</span>${esc(sc.endCard ? 'Closing' : sc.name)}</a>`).join('');
   $('#menu').querySelectorAll('a').forEach(a => a.onclick = e => { e.preventDefault(); go(+a.dataset.i); });
 }
 function toggleMenu(v) {
-  const on = v ?? !$('#menu').classList.contains('on');
-  $('#menu').classList.toggle('on', on); $('#bMenu').classList.toggle('on', on); $('#bMenu').setAttribute('aria-expanded', on);
-  if (on) { const a = $('#menu a.cur'); a && a.scrollIntoView({ block: 'nearest' }); }
+  const on = v ?? !$('#panel').classList.contains('menu');
+  $('#panel').classList.toggle('menu', on); $('#bMenu').classList.toggle('on', on); $('#bMenu').setAttribute('aria-expanded', on);
 }
 
-/* ---------- map padding: frame the story in the space beside the panel ---------- */
+/* ---------- map padding: frame the story beside the panel (constant, so it never jumps) ---------- */
 function updatePadding() {
   const p = { top: 0, bottom: 0, left: 0, right: 0 };
   if (!isRec()) {
-    const r = $('#panel').getBoundingClientRect();
-    if (innerWidth <= 900 && innerHeight > 520) p.bottom = Math.round(innerHeight - r.top); else p.left = Math.round(r.right);
+    if (innerWidth <= 900 && innerHeight > 520) p.bottom = Math.round(innerHeight * 0.4);
+    else { const pn = $('#panel'); p.left = pn.offsetLeft + pn.offsetWidth; }
   }
   map.setPadding(p);
 }
@@ -382,7 +352,7 @@ function mixPose(a, b, u, arc) {
 }
 function blended(c) {
   if (!blend) return c;
-  if (blend.arc == null) { // size the move once: far jumps pull back a little (fly-to), near ones just glide
+  if (blend.arc == null) { // far jumps pull back a little (fly-to), near ones just glide
     const a = blend.from, d = Math.hypot(mercX(c.c[0]) - mercX(a.c[0]), mercY(c.c[1]) - mercY(a.c[1])) * 512 * Math.pow(2, Math.min(a.z, c.z));
     blend.arc = clamp(Math.log2(1 + d / innerWidth) * 1.1, 0, 3);
     blend.dur = 1300 + 450 * blend.arc + 70 * Math.abs(c.z - a.z) + 4 * Math.abs(((c.b - a.b) % 360 + 540) % 360 - 180);
@@ -390,6 +360,19 @@ function blended(c) {
   const u = clamp((performance.now() - blend.t0) / blend.dur, 0, 1);
   if (u >= 1) { blend = null; return c; }
   return mixPose(blend.from, c, ease.io(u), blend.arc);
+}
+
+/* ---------- opening: centred title, then the panel ---------- */
+let intro = 0, introTimer; // 0 off · 1 title showing · 2 fading out
+function startIntro() {
+  intro = 1; document.body.classList.add('intro');
+  setTimeout(() => intro === 1 && $('#intro').classList.add('on'), 500);
+  introTimer = setTimeout(endIntro, 4200);
+}
+function endIntro() {
+  if (intro !== 1) return; intro = 2; clearTimeout(introTimer);
+  $('#intro').classList.remove('on');
+  setTimeout(() => { intro = 0; document.body.classList.remove('intro'); go(FIRST); }, 1100);
 }
 
 /* ---------- scene management ---------- */
@@ -406,7 +389,7 @@ function enter(i, snap) {
   renderPanel(sc, dir);
   buildLegend(sc);
   $('#card .n').textContent = sc.chapter; $('#card .t').textContent = sc.name;
-  setStamp(sc.stamp || '', sc.stamp ? 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E' : '');
+  setStamp(sc.stamp || '');
   $('#cap').textContent = sc.vo || '';
   $('#counter').style.opacity = 0; $('#ucdpCount').style.opacity = 0;
   $('#counter').style.display = sc.id === 'dependency' ? '' : 'none';
@@ -436,7 +419,7 @@ function render(dt) {
     let cnt = 0;
     stacks.forEach(s => { let k = 0; while (k < s.ns.length && s.ns[k] <= n) k++; cnt += k; if (k !== s.shown) { s.shown = k; map.setFeatureState({ source: 'stacks', id: s.id }, { k }); } });
     $('#ucdpCount .v').textContent = cnt; $('#ucdpCount').style.opacity = clamp((tl - 4) / 1.5, 0, 1);
-    setStamp(fmtD(n), 'UCDP GED · FATAL EVENTS, PRECISE LOCATION');
+    setStamp(fmtD(n));
   } else if (L.ucdp.cur < 0.01) { map.setPaintProperty('ucdp-glow', 'circle-opacity', 0); }
 
   // tween logical layers
@@ -455,7 +438,7 @@ function render(dt) {
   map.setPaintProperty('plant-dot', 'circle-color', plantAlarm || sc.id === 'winter' || sc.id === 'dependency' ? '#ff2d55' : '#ffffff');
   if (sc.id !== 'repair') plantAlarm = 0;
 
-  updateCallouts(tl); updateKeys(sc, tl);
+  updateCallouts(tl);
   // record-mode overlays (hidden by CSS otherwise)
   const chapterCard = sc.chapter && tl > 0.6 && tl < 5.2;
   $('#card').classList.toggle('on', !!chapterCard);
@@ -466,15 +449,11 @@ function render(dt) {
   $('#title .st').textContent = sc.endCard ? 'Slow violence · energy · water · territory' : 'The militarization of energy infrastructure · Zaporizhzhia NPP';
   document.body.classList.toggle('tl', L.timeline.cur > 0.5);
   $('#cap').classList.toggle('on', capOn && !!sc.vo && tl > 1.5 && tl < (sc.capUntil || sc.dur - 0.4) && !chapterCard);
-  $('#readout').innerHTML = `${c.c[1].toFixed(4)}°N  ${c.c[0].toFixed(4)}°E<br>ALT Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · HDG ${(((c.b % 360) + 360) % 360).toFixed(0).padStart(3, '0')}°<br>TERRAIN ×${ex} VERTICAL`;
-  if (legcam) legcam.textContent = `${c.c[1].toFixed(4)}°N ${c.c[0].toFixed(4)}°E · Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · TERRAIN ×${ex}`;
-  // slide progress
-  const u = clamp(tl / sc.dur, 0, 1);
-  $('#clock').textContent = `${fmtS(tl)} / ${fmtS(sc.dur)}`;
-  $('#scrub .fill').style.width = (u * 100) + '%'; $('#scrub .knob').style.left = (u * 100) + '%';
+  if (isRec()) $('#readout').innerHTML = `${c.c[1].toFixed(4)}°N  ${c.c[0].toFixed(4)}°E<br>ALT Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · HDG ${(((c.b % 360) + 360) % 360).toFixed(0).padStart(3, '0')}°<br>TERRAIN ×${ex} VERTICAL`;
+  $('#scrub .fill').style.width = (clamp(tl / sc.dur, 0, 1) * 100) + '%';
   $('#bNext').classList.toggle('ready', held && cur < N - 1);
 }
-// scene-driven values (imagery crossfade, dimming) snap during normal playback, but ease in while the camera is blending
+// scene-driven values (imagery crossfade, dimming) snap during playback but ease in while the camera blends
 function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!blend) { o.cur = v; o.set(v); } }
 
 function loop(now) {
@@ -493,7 +472,7 @@ function loop(now) {
 const ICON = {
   play: '<svg viewBox="0 0 12 12"><path d="M3 1.5v9l7.5-4.5z"/></svg>',
   pause: '<svg viewBox="0 0 12 12"><path d="M2.5 1.5H5v9H2.5zM7 1.5h2.5v9H7z"/></svg>',
-  replay: '<svg viewBox="0 0 12 12"><path d="M6 2a4 4 0 1 1-3.8 2.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M.8 1.6l.4 4 3.6-1.8z"/></svg>',
+  replay: '<svg class="r" viewBox="0 0 12 12"><path d="M2.2 4.6A4 4 0 1 1 2 7"/><path d="M1.6 1.8v3h3"/></svg>',
 };
 function setPlay(v) {
   playing = v; if (v) held = false;
@@ -501,7 +480,8 @@ function setPlay(v) {
   $('#bPlay').innerHTML = ICON[k]; $('#bPlay').setAttribute('aria-label', k === 'replay' ? 'Replay this slide' : k === 'pause' ? 'Pause' : 'Play');
 }
 function go(i) {
-  i = clamp(i, 0, N - 1); toggleMenu(false);
+  if (intro === 1) { endIntro(); return; }
+  i = clamp(i, FIRST, N - 1); toggleMenu(false);
   if (i === cur) return;
   dir = i > cur ? 1 : -1;
   startBlend();
@@ -512,35 +492,34 @@ function seekLocal(t, play) { // within the current slide
   const sc = ST.scenes[cur]; if (!sc) return;
   if (Math.abs(T - (sc.start + t)) > 1.5) startBlend();
   T = sc.start + clamp(t, 0.001, sc.dur - 0.001); logShown = -1; held = false;
-  if (play) setPlay(true); else setPlay(playing);
+  setPlay(play || playing);
 }
 function seek(t) { T = clamp(t, 0, TOTAL - 0.001); cur = -1; first = true; } // hard cut (URL ?t= and test hook)
 function togglePlay() { if (held) seekLocal(0, true); else setPlay(!playing); }
-function setAuto(v) { auto = v; $('#bAuto').classList.toggle('act', auto); if (auto && held && cur < N - 1) next(); }
+function setAuto(v) { auto = v; if (auto && held && cur < N - 1) next(); }
 function toggleRec() { document.body.classList.toggle('rec'); setAuto(isRec()); updatePadding(); }
 
 $('#bPlay').onclick = togglePlay;
 $('#bBack').onclick = back; $('#bNext').onclick = next;
 $('#bMenu').onclick = () => toggleMenu();
-$('#bAuto').onclick = () => setAuto(!auto);
-$('#pbody').addEventListener('scroll', updateMore, { passive: true });
-$('#more').onclick = () => { const pb = $('#pbody'); pb.scrollBy({ top: pb.clientHeight * 0.7, behavior: 'smooth' }); };
-(() => { // per-slide scrubber
+(() => { // per-slide scrubber along the top edge of the nav bar
   const s = $('#scrub'); let drag = false;
   const at = e => { const r = s.getBoundingClientRect(), sc = ST.scenes[cur]; if (sc) seekLocal(clamp((e.clientX - r.left) / r.width, 0, 1) * sc.dur); };
   s.addEventListener('pointerdown', e => { drag = true; s.setPointerCapture(e.pointerId); at(e); });
   s.addEventListener('pointermove', e => drag && at(e));
   s.addEventListener('pointerup', () => drag = false);
 })();
+addEventListener('pointerdown', () => { if (intro === 1) endIntro(); });
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  const onBtn = e.target.closest && e.target.closest('button,a,li[tabindex]');
-  if (onBtn && (e.key === 'Enter' || e.key === ' ')) return; // let focused controls activate normally
+  if (intro) { if (intro === 1 && !['r', 'R', 'f', 'F'].includes(e.key)) { e.preventDefault(); endIntro(); return; } if (intro === 2) return; }
+  const onBtn = e.target.closest && e.target.closest('button,a');
+  if (onBtn && (e.key === 'Enter' || e.key === ' ')) return; // focused controls activate normally
   switch (e.key) {
     case ' ': e.preventDefault(); held && cur < N - 1 ? next() : togglePlay(); break;
     case 'ArrowRight': case 'PageDown': e.preventDefault(); next(); break;
     case 'ArrowLeft': case 'PageUp': e.preventDefault(); back(); break;
-    case 'Home': go(0); break;
+    case 'Home': go(FIRST); break;
     case 'End': go(N - 1); break;
     case 'Escape': toggleMenu(false); break;
     case 'm': case 'M': toggleMenu(); break;
@@ -550,24 +529,25 @@ addEventListener('keydown', e => {
     case 'f': case 'F': document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); break;
   }
 });
-addEventListener('hashchange', () => { const i = ST.scenes.findIndex(s => s.id === location.hash.slice(1)); if (i >= 0) go(i); });
+addEventListener('hashchange', () => { const i = ST.scenes.findIndex(s => s.id === location.hash.slice(1)); if (i >= FIRST) go(i); });
 if (qs.has('rec')) { document.body.classList.add('rec'); setAuto(true); }
 buildMenu(); setPlay(false);
 
 map.on('load', () => {
   buildLayers(); buildTimeline(); updatePadding();
-  addEventListener('resize', () => { buildTimeline(); updatePadding(); updateMore(); });
+  addEventListener('resize', () => { buildTimeline(); updatePadding(); });
   $('#attrib').innerHTML = 'Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless, EOX</a> (modified Copernicus data 2021, 2024) · Esri, Maxar, Earthstar Geographics · NASA Black Marble / GIBS · Terrain: Mapzen / AWS · Lines: © OpenStreetMap';
   const hi = ST.scenes.findIndex(s => s.id === location.hash.slice(1));
-  if (hi >= 0) seek(ST.scenes[hi].start + 0.001);
+  if (hi >= FIRST) seek(ST.scenes[hi].start + 0.001);
   if (qs.has('t')) seek(+qs.get('t'));
   if (qs.has('scene')) { const s = ST.scenes.find(s => s.id === qs.get('scene')); if (s) seek(s.start + 0.001); }
   const ld = $('#loading'); if (ld) ld.style.opacity = 0; setTimeout(() => $('#loading')?.remove(), 1000);
   if (!qs.has('paused')) setPlay(true);
+  if (sceneAt(T) < FIRST && !isRec()) startIntro(); else document.body.classList.remove('intro');
   requestAnimationFrame(loop);
 });
 // test hook: render a given time without playing
-window.__film = { seek: t => { seek(t); }, go, get T() { return T; }, TOTAL, play: () => setPlay(true),
+window.__film = { seek: t => { seek(t); }, go, get T() { return T; }, TOTAL, play: () => setPlay(true), get intro() { return intro; },
   step: (dt = 0.05) => { render(dt); map.redraw(); },
   // render frames leading up to t (for headless checks while the tab is in the background)
   shot: async (t, n = 40) => { seek(t - 2); const l = $('#loading'); if (l) l.remove();
