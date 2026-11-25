@@ -413,7 +413,7 @@ function slideHTML(sc, dir) {
     <div id="dateline" class="dateline none"></div><p class="lede">${esc(sc.vo)}</p>` : ''}</div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
     <p class="lede">${esc(sc.vo)}</p><p class="src">Sources · ${esc(CREDITS)}</p></div>`;
-  return `<div class="${cls}"><div class="hd"><span class="num">${esc(sc.chapter)}</span><h2>${esc(sc.name)}</h2></div>
+  return `<div class="${cls}"><div class="hd"><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
     <p class="lede">${esc(sc.vo)}</p></div>`;
 }
