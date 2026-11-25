@@ -170,7 +170,9 @@ def boom(at, gain=1.0):
          + 0.4 * sosfilt(butter(2, 120, fs=SR, output="sos"), rng.standard_normal(L)) * np.exp(-tt * 2.5))
     music[i:i + L] += gain * x[: max(0, N - i)].astype(np.float32)
 start = {s["id"]: s["start"] for s in scenes}
-boom(start["kyiv"] + 16.0, 0.9)          # Kyiv goes dark
+_k = json.loads(subprocess.check_output(["node", "-e", "global.window={};require('vm').runInThisContext(require('fs').readFileSync('../story.js','utf8'));"
+      "console.log(JSON.stringify(window.STORY.scenes.find(s=>s.id==='kyiv').dim||{}))"], cwd=HERE))
+boom(start["kyiv"] + _k.get("t0", 16.0), 0.9)   # Kyiv goes dark (follows the dim timing in story.js)
 boom(start["hostage"] + 15.0, 1.0)       # title
 for sid in ("occupation", "repair", "supply", "frontier"):
     boom(start[sid] + 0.5, 0.6)

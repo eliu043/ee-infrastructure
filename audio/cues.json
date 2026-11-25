@@ -8,41 +8,41 @@
    "id": "kyiv",
    "start": 1.6,
    "end": 8.46,
-   "limit": 33.6,
+   "limit": 27.6,
    "fits": true
   },
   {
    "id": "hostage",
-   "start": 35.6,
-   "end": 44.13,
-   "limit": 47.6,
+   "start": 29.6,
+   "end": 38.13,
+   "limit": 41.6,
    "fits": true
   },
   {
    "id": "lifeline",
-   "start": 67.6,
-   "end": 77.37,
-   "limit": 91.6,
+   "start": 61.6,
+   "end": 71.37,
+   "limit": 85.6,
    "fits": true
   },
   {
    "id": "occupation",
-   "start": 97.6,
-   "end": 107.28,
-   "limit": 117.6,
+   "start": 91.6,
+   "end": 101.28,
+   "limit": 111.6,
    "fits": true
   },
   {
    "id": "draw",
-   "start": 123.6,
-   "end": 133.04,
-   "limit": 141.6,
+   "start": 117.6,
+   "end": 127.04,
+   "limit": 135.6,
    "fits": true
   },
   {
    "id": "water",
-   "start": 147.6,
-   "end": 164.47,
+   "start": 141.6,
+   "end": 158.47,
    "limit": 195.6,
    "fits": true
   },

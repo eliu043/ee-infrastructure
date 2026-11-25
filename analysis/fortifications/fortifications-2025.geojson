@@ -1,0 +1,795 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52369,
+      47.51198
+     ],
+     [
+      34.52444,
+      47.51121
+     ],
+     [
+      34.52495,
+      47.511
+     ],
+     [
+      34.52419,
+      47.5104
+     ],
+     [
+      34.52387,
+      47.50998
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "New trench network beside the bank road",
+    "figure": "Fig. 6",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       34.5215,
+       47.5129
+      ],
+      [
+       34.52205,
+       47.5128
+      ],
+      [
+       34.5221,
+       47.51245
+      ],
+      [
+       34.5216,
+       47.5124
+      ],
+      [
+       34.5215,
+       47.5129
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Enhanced trench network with overhead cover / protection",
+    "figure": "Fig. 6",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.52375,
+     47.5151
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Unidentified construction with overhead cover, possible observation post",
+    "figure": "Fig. 6",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.5232,
+      47.5121
+     ],
+     [
+      34.5236,
+      47.51245
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "New digging",
+    "figure": "Fig. 6",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52622,
+      47.51969
+     ],
+     [
+      34.52636,
+      47.51954
+     ],
+     [
+      34.5261,
+      47.51938
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Fighting trench, zig-zag (extended network)",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52636,
+      47.51954
+     ],
+     [
+      34.52668,
+      47.51944
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Communication trench",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52576,
+      47.51884
+     ],
+     [
+      34.52585,
+      47.51859
+     ],
+     [
+      34.52561,
+      47.5184
+     ],
+     [
+      34.52552,
+      47.51828
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Extended trench network, linked into a single zig-zag trench",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52561,
+      47.5184
+     ],
+     [
+      34.52595,
+      47.5184
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Trench branch",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.52496,
+      47.51769
+     ],
+     [
+      34.52515,
+      47.51761
+     ],
+     [
+      34.52545,
+      47.51757
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Trench",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.52924,
+     47.52259
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Unidentified structure under camouflage netting; 'barrel'-like object nearby (assessed highly unlikely to be military hardware)",
+    "figure": "Fig. 8",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.54183,
+     47.52698
+    ]
+   },
+   "properties": {
+    "kind": "checkpoint",
+    "note": "Checkpoint: barrier and guard post on the road parallel to the pond",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.54225,
+     47.52742
+    ]
+   },
+   "properties": {
+    "kind": "storage",
+    "note": "Revetments among trees, crates visible: possible storage area, possibly ammunition",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.54091,
+     47.52772
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "New digging or scrapes",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.54244,
+     47.52803
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "New digging or scrapes",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.53672,
+      47.52775
+     ],
+     [
+      34.53842,
+      47.52782
+     ],
+     [
+      34.53971,
+      47.52869
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "scrapes",
+    "note": "Scrapes dug in regular succession: prepared positions for armoured vehicles",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.53698,
+     47.5283
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Destroyed BTR-variant chassis in the cleared area",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.53733,
+      47.52903
+     ],
+     [
+      34.54041,
+      47.52991
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Pre-existing trench line (since occupation)",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.54074,
+      47.52991
+     ],
+     [
+      34.54483,
+      47.53009
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Pre-existing trench line (since occupation)",
+    "figure": "Fig. 9",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.54686,
+      47.52945
+     ],
+     [
+      34.548,
+      47.5293
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "New trench",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      34.54919,
+      47.52945
+     ],
+     [
+      34.5501,
+      47.5289
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "trench",
+    "note": "Further extension to trenches",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.55066,
+     47.5279
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Fresh digging or scrapes",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.55494,
+     47.52732
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Fresh digging or scrapes",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.55935,
+     47.52649
+    ]
+   },
+   "properties": {
+    "kind": "position",
+    "note": "Fresh digging or scrapes",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.54944,
+     47.52805
+    ]
+   },
+   "properties": {
+    "kind": "bunker",
+    "note": "Deep construction with beams (Jun), covered with soil (Aug), flat solid structure (Oct): possible reinforced bunker",
+    "figure": "Fig. 11",
+    "image_date": "2025-10-15",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.56682,
+     47.52485
+    ]
+   },
+   "properties": {
+    "kind": "burnt",
+    "note": "Burnt ground near the venturi cooling towers",
+    "figure": "Fig. 12",
+    "image_date": "2025-08-12",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.5787,
+     47.5031
+    ]
+   },
+   "properties": {
+    "kind": "checkpoint",
+    "note": "Checkpoint with man-made chicane, BTR-variant APC and utility truck; revetted positions either side of the road (location approximate ±200 m)",
+    "figure": "Fig. 13",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.58619,
+     47.51718
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.5817,
+     47.5091
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.57938,
+     47.50501
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.58355,
+     47.50394
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.5881,
+     47.50755
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.58791,
+     47.50653
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.59151,
+     47.50693
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.59312,
+     47.50968
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.59455,
+     47.51246
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.59556,
+     47.51466
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.59358,
+     47.51418
+    ]
+   },
+   "properties": {
+    "kind": "sangar",
+    "note": "Sangar (raised guard position), most with a steel cage against drones",
+    "figure": "Fig. 15",
+    "image_date": "2025-06-01",
+    "source": "McKenzie Intelligence Services for Greenpeace Ukraine, 18 Dec 2025 (Airbus Pléiades Neo imagery)",
+    "method": "traced by eye from report figures, georeferenced to Esri World Imagery; uncertainty ~30-80 m unless noted"
+   }
+  }
+ ]
+}

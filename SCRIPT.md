@@ -58,16 +58,16 @@ Each chapter's caption appears after its chapter card (~5 s in).
 | Time | Chapter | Narration (yours, verbatim) | What's on screen |
 |---|---|---|---|
 | 0:00 | Cold open · Kyiv | For a few hours on the last day of January this year, virtually all of Kyiv was submerged in darkness. | Real VIIRS night pass of Kyiv lit (24 Jan 2026), then it fades to dark at 0:16 — labelled **illustration** |
-| 0:34 | Hostage | Hidden in plain sight is the slow violence of infrastructural warfare as Ukraine's energy facilities are being held hostage. | Night flight Kyiv → ZNPP (440 km), then the POWERLINES title |
-| 1:02 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Grid pulses outward; particles flow out |
-| 1:32 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Frontline along the reservoir |
-| 1:58 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Energy / Water / Labor callouts |
-| 2:22 | 04 Water | Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plants canals depleted. | Reservoir drains 2021 → 2023 → pond 2024 → **close-up of the spray ponds with the reported well zone** (11 wells, ~250 m³/h) → pond and thermal plant canals 2025, with McKenzie's measured shrinkage 9.60 → 8.66 km² |
+| 0:28 | Hostage | Hidden in plain sight is the slow violence of infrastructural warfare as Ukraine's energy facilities are being held hostage. | Night flight Kyiv → ZNPP (440 km), then the POWERLINES title |
+| 0:56 | 01 Lifeline | During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat. | Grid pulses outward; particles flow out |
+| 1:26 | 02 Occupation | After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion. | Frontline along the reservoir |
+| 1:52 | 03 It cannot be switched off | Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor. | Energy / Water / Labor callouts |
+| 2:16 | 04 Water | Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plants canals depleted. | Reservoir drains → **Earth Engine maps over the whole reservoir**: vegetation 2021 vs 2025 (the bed turns green), then moisture change 2024–26 vs 2019–22 (the land dries) → cooling pond with a **monthly water-area chart** (down a third since 2023) → spray ponds and the reported well zone → pond and thermal plant canals 2025 |
 | 3:16 | 05 Not so soon | Eventually Russia wants to connect ZNPP to the national grid, but not so soon. | Schematic arrow |
 | 3:31 | 06 Shelling and repair | In the meantime, Russia's shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force. | Outage timeline 2022–26, damage zones, plus crew road routes |
 | 4:35 | 07 Sovereignty becomes dependency | Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns. | Close orbit; power flows **into** the plant |
 | 5:07 | 08 Blackout and supply | During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia's shelling of roads and railways. | Counter to 8. Diesel generators, then the Melitopol supply route, the disused rail branch, and fatal events along the route |
-| 5:47 | 09 Frontier | Furthermore, trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | UCDP event columns rise 2022 → 2026 |
+| 5:47 | 09 Frontier | Furthermore, trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted. | Low pass over **traced fortifications** (zig-zag trenches on the west bank; checkpoint, vehicle scrapes and possible ammunition store on the north-west bank; 11 caged sangars on the plant perimeter), then UCDP event columns 2022 → 2026 |
 | 6:21 | 10 Winter | As winter approaches, more cities across Ukraine are bracing for long dark months while ZNPP remains suspended between occupation, disrepair, and the threat of nuclear catastrophe. | Ukraine's lights dim; ZNPP beacon |
 | 6:46 | End | — | Title and credits |
 
@@ -83,6 +83,15 @@ Each chapter's caption appears after its chapter card (~5 s in).
 - **Imagery check:** I compared Esri Wayback imagery of the spray-pond block from before (Dec 2022 release) and after (Feb 2024 release) the drilling. At ~0.5–1 m resolution, and with a different viewing angle, individual wellheads can't be identified, so no well points are placed. 30 cm Pléiades Neo imagery (what McKenzie used) might show them.
 - **Pond decline:** the cooling pond was dropping ~1 cm a day (NEI, Aug 2023). McKenzie Intelligence / Greenpeace Ukraine ([report, Dec 2025](https://www.greenpeace.org/ukraine/en/news/5438/new-level-of-militarization/)) measured the pond and channels at 9,599,617 m² (3 Jul 2022), 8,767,820 m² (1 Jun 2025) and 8,662,141 m² (12 Aug 2025). They also found a dam built across the intake channel in summer 2025, creating a smaller pond. The thermal plant canal was the pond's other supply ("its other main supply of water", NEI Aug 2023).
 
+### Land change (Earth Engine, `research/land-change/`)
+- **Reservoir bed:** about 2,040 km² of water each late summer 2019–22; 313 km² in 2023, 119 km² in 2025. Green vegetation grew from ~10 km² to 1,358 km² (2025) and 1,547 km² (2026).
+- **Banks, 2024–26 vs 2019–22:** less green (NDVI 0.40 → 0.27 south bank, 0.42 → 0.33 north bank) and drier (NDMI down 0.10–0.12). Irrigated fields fall the most.
+- **Drought caveat:** 2024–25 were also exceptionally dry. `research/canals-ndvi/` separates the canal effect from drought.
+- **Cooling pond + channels:** Sentinel-2 monthly water area fell from 8.6 to 5.5 km² between mid-2023 and Oct 2026.
+
+### Fortifications (`research/fortifications/`)
+37 features traced from the McKenzie Intelligence / Greenpeace Ukraine report (Pléiades Neo, Jun–Oct 2025). Positions are approximate (~30–80 m; sangars ~10 m; one checkpoint ±200 m). See that folder's README.
+
 ### Supply evidence (`research/logistics/`)
 - **Road:** Melitopol → ZNPP is 126 km (229 km from Crimea). The last 30 km run within 20 km of the river front.
 - **Rail:** OSM shows no active line reaching the plant. The Enerhodar branch is tagged *disused*, so on the mapped network the last leg is by road.
@@ -96,7 +105,7 @@ Each chapter's caption appears after its chapter card (~5 s in).
   - Keep your own source for the blackout itself.
 - **Unsourced figures:** confirm or cut 6 × VVER-1000 / ~6 GW / a fifth of national generation / seized 4 March 2022 / no generation since Sept 2022.
 - **Water:** the wells are shown as a reported zone, not as points. The pond imagery comes from annual composites; the area figures are McKenzie's.
-- **Frontier:** the event columns also include the occupied bank.
+- **Frontier:** the event columns also include the occupied bank. Fortifications are traced from a third-party report, so credit McKenzie / Greenpeace Ukraine on screen (done in the source line).
 - **Winter:** the night-lights dimming is illustrative.
 
 ## Adding trenches / artillery (chapter 07)

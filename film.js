@@ -126,6 +126,14 @@ function buildLayers() {
   map.addSource('railDisused', { type: 'geojson', data: D.railDisused || FC([]) });
   map.addSource('wells', { type: 'geojson', data: D.wells || FC([]) });
   map.addSource('wellCand', { type: 'geojson', data: D.wellCandidates || FC([]) });
+  const LC = D.landchange;
+  if (LC) {
+    const b = LC.bounds, coords = [[b.west, b.north], [b.east, b.north], [b.east, b.south], [b.west, b.south]];
+    ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k => {
+      map.addSource('lc-' + k, { type: 'image', url: `landchange/${k}.jpg`, coordinates: coords });
+    });
+  }
+  map.addSource('fort', { type: 'geojson', data: D.fort || FC([]) });
   map.addSource('supplyEvents', { type: 'geojson', data: D.supplyEvents || FC([]) });
   map.addSource('arrow', { type: 'geojson', data: arrowHead });
   map.addSource('trenches', { type: 'geojson', data: X.trenches || FC([]) });
@@ -162,6 +170,11 @@ function buildLayers() {
   add({ id: 'spray-ponds', type: 'fill', source: 'wells', filter: ['==', ['get', 'kind'], 'spray-ponds'], paint: { 'fill-color': '#5cc8ff', 'fill-opacity': 0 } });
   add({ id: 'well-cand', type: 'circle', source: 'wellCand', paint: { 'circle-radius': 6, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#5cc8ff', 'circle-stroke-width': 2, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'well-cand-dot', type: 'circle', source: 'wellCand', paint: { 'circle-radius': 2, 'circle-color': '#e6f7ff', 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'fort-line-glow', type: 'line', source: 'fort', filter: ['!=', ['geometry-type'], 'Point'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffdf6b', 'line-width': 9, 'line-blur': 6, 'line-opacity': 0 } });
+  add({ id: 'fort-line', type: 'line', source: 'fort', filter: ['!=', ['geometry-type'], 'Point'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffe9a0', 'line-width': 2.4, 'line-opacity': 0 } });
+  const fc_ = ['match', ['get', 'kind'], 'sangar', '#ff2d55', 'checkpoint', '#ff8a00', 'bunker', '#ff4dff', 'storage', '#00e5ff', 'burnt', '#8a8a8a', '#ffffff'];
+  add({ id: 'fort-pt', type: 'circle', source: 'fort', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 3, 14, 7], 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': fc_, 'circle-stroke-width': 2, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
+  add({ id: 'fort-pt-dot', type: 'circle', source: 'fort', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 1.2, 14, 2.5], 'circle-color': fc_, 'circle-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'supply-events', type: 'circle', source: 'supplyEvents', paint: { 'circle-color': '#ff3b2f', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3.5, 12, 7], 'circle-blur': 0.2, 'circle-opacity': 0, 'circle-stroke-width': 1, 'circle-stroke-color': '#ffd0c8', 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'proposed', type: 'line', source: 'proposed', paint: { 'line-color': '#ffffff', 'line-width': 2, 'line-dasharray': [2, 2.5], 'line-opacity': 0 } });
   add({ id: 'arrow', type: 'fill', source: 'arrow', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0 } });
@@ -174,6 +187,8 @@ function buildLayers() {
   add({ id: 'plant-ring', type: 'circle', source: 'plant', paint: { 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.4, 'circle-radius': 12, 'circle-stroke-opacity': 0, 'circle-pitch-alignment': 'map' } });
   add({ id: 'plant-dot', type: 'circle', source: 'plant', paint: { 'circle-color': '#fff', 'circle-radius': 4, 'circle-blur': 0.3, 'circle-opacity': 0 } });
 
+  if (D.landchange) ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k =>   // above imagery, below vectors
+    map.addLayer({ id: 'lc-' + k, type: 'raster', source: 'lc-' + k, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0 } }, 'res-fill'));
   reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('s2023', pp('s2023', 'raster-opacity')); reg('s2025', pp('s2025', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
   reg('lights', pp('lights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
   reg('reservoir', pp('res-fill', 'fill-opacity', 0.35));
@@ -189,6 +204,9 @@ function buildLayers() {
   reg('rail', pp('rail-main', 'line-opacity', 0.7));
   reg('railDisused', pp('rail-disused', 'line-opacity'));
   reg('supplyEvents', pp('supply-events', 'circle-opacity', 0.9), pp('supply-events', 'circle-stroke-opacity', 0.9));
+  reg('fort', pp('fort-line-glow', 'line-opacity', 0.5), pp('fort-line', 'line-opacity'), pp('fort-pt', 'circle-stroke-opacity'), pp('fort-pt-dot', 'circle-opacity'));
+  ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k => reg('lc:' + k, v => map.getLayer('lc-' + k) && map.setPaintProperty('lc-' + k, 'raster-opacity', v * 0.92)));
+  reg('legend', domOp('#legend')); reg('chart', domOp('#chart'));
   reg('wells', pp('wells-zone', 'fill-opacity', 0.35), pp('wells-zone-line', 'line-opacity', 0.9), pp('spray-ponds', 'fill-opacity', 0.45),
     pp('well-cand', 'circle-stroke-opacity'), pp('well-cand-dot', 'circle-opacity'));
   reg('water', pp('water-fill', 'fill-opacity', 0.22), pp('water-line', 'line-opacity', 0.9));
@@ -309,6 +327,33 @@ function updateTrucks(dt, zoom) {
 const dashSeq = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,4,0],[0,0.5,3,3.5],[0,1,3,3],[0,1.5,3,2.5],[0,2,3,2],[0,2.5,3,1.5],[0,3,3,1],[0,3.5,3,0.5]];
 let dashStep = -1;
 
+/* ---------- legend + chart (land change) ---------- */
+const LEG = {
+  'ndvi-2021': ['NDVI · LATE SUMMER 2021', 'bare / water', 'dense green', 'linear-gradient(90deg,#3b2a1a,#7a5a2e,#b59b5a,#d9d38a,#9fcf6a,#4caf50,#1b7a34)'],
+  'ndvi-2025': ['NDVI · LATE SUMMER 2025', 'bare / water', 'dense green', 'linear-gradient(90deg,#3b2a1a,#7a5a2e,#b59b5a,#d9d38a,#9fcf6a,#4caf50,#1b7a34)'],
+  'ndvi-change': ['VEGETATION CHANGE · 2024–26 vs 2019–22', 'less green', 'greener', 'linear-gradient(90deg,#8c2d04,#ec7014,#fdae61,#f7f7f7,#a6d96a,#41ab5d,#00441b)'],
+  'ndmi-change': ['MOISTURE (NDMI) CHANGE · 2024–26 vs 2019–22 · bed: water became land', 'drier', 'wetter', 'linear-gradient(90deg,#8c2d04,#ec7014,#fdae61,#f7f7f7,#a6d96a,#41ab5d,#00441b)'],
+};
+let legKey = '';
+function setLegend(k) { if (k === legKey) return; legKey = k; const l = LEG[k]; $('#legend .t').textContent = l[0]; $('#legend .a').textContent = l[1]; $('#legend .b').textContent = l[2]; $('#legend .bar').style.background = l[3]; }
+let chartDrawn = '';
+function drawChart(c, tl) {
+  const s = (D.landchange && D.landchange[c.series]) || []; if (!s.length) return;
+  const key = c.series + Math.floor(tl * 4); if (key === chartDrawn) return; chartDrawn = key;
+  const W = 420, H = 150, x0 = 36, y0 = 18, w = W - 50, h = H - 46;
+  const vs = s.map(d => d[1]), lo = Math.min(...vs) * 0.98, hi = Math.max(...vs) * 1.01;
+  const X = i => x0 + i / (s.length - 1) * w, Y = v => y0 + (1 - (v - lo) / (hi - lo)) * h;
+  const upto = Math.max(2, Math.round(clamp((tl - c.t0) / (c.draw || 4), 0, 1) * s.length));
+  let p = s.slice(0, upto).map((d, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(d[1]).toFixed(1)}`).join('');
+  let yrs = ''; s.forEach((d, i) => { if (d[0].endsWith('-01')) yrs += `<line x1="${X(i)}" x2="${X(i)}" y1="${y0}" y2="${y0 + h}" stroke="rgba(255,255,255,.12)"/><text x="${X(i) + 3}" y="${y0 + h + 12}" fill="#9aa5a0" font-size="9">${d[0].slice(0, 4)}</text>`; });
+  const last = s[upto - 1];
+  $('#chart svg').innerHTML = `<text x="0" y="10" fill="#eef1ee" font-size="10" letter-spacing="2">${c.title}</text>${yrs}
+    <text x="0" y="${Y(hi) + 4}" fill="#9aa5a0" font-size="9">${hi.toFixed(1)}</text><text x="0" y="${Y(lo)}" fill="#9aa5a0" font-size="9">${lo.toFixed(1)}</text>
+    <path d="${p}" fill="none" stroke="#5cc8ff" stroke-width="1.8"/><circle cx="${X(upto - 1)}" cy="${Y(last[1])}" r="3" fill="#5cc8ff"/>
+    <text x="${X(upto - 1) - 6}" y="${Y(last[1]) - 8}" text-anchor="end" fill="#bfeaff" font-size="10">${last[1].toFixed(2)} km² · ${last[0]}</text>
+    <text x="0" y="${H - 2}" fill="#5d6763" font-size="8">${c.note || ''}</text>`;
+}
+
 /* ---------- HUD ---------- */
 let stampCache = '';
 function setStamp(v, sub = '') { const k = v + '|' + sub; if (k === stampCache) return; stampCache = k; $('#stamp .v').textContent = v; $('#stamp .sub').textContent = sub; }
@@ -349,6 +394,13 @@ function render(dt) {
   if (sc.imagerySeq) { const q = sc.imagerySeq; const w = {}; q.forEach(([, l]) => w[l] = 0);
     for (let k = 0; k < q.length; k++) { const u = k === 0 ? 1 : clamp((tl - q[k][0]) / 2, 0, 1); if (u > 0) { Object.keys(w).forEach(l => w[l] *= (1 - u)); w[q[k][1]] = u; } }
     Object.entries(w).forEach(([l, v]) => force(l, v)); }
+  if (sc.overlaySeq) { const q = sc.overlaySeq, w = {};
+    ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k => w[k] = 0);
+    for (let i = 0; i < q.length; i++) { const u = clamp((tl - q[i][0]) / 1.5, 0, 1); if (u > 0) { Object.keys(w).forEach(k => w[k] *= (1 - u)); if (q[i][1]) w[q[i][1]] = u; } }
+    Object.entries(w).forEach(([k, v]) => force('lc:' + k, v));
+    const cur = [...q].reverse().find(x => tl >= x[0]); const key = cur && cur[1];
+    force('legend', key ? 1 : 0); if (key) setLegend(key); }
+  if (sc.chart) { const c = sc.chart; force('chart', clamp((tl - c.t0) / 1, 0, 1) * clamp((c.t1 - tl) / 1, 0, 1)); drawChart(c, tl); }
   if (sc.wellsOn) { const [a, b] = sc.wellsOn; force('wells', clamp((tl - a) / 1.5, 0, 1) * clamp((b - tl) / 1.5, 0, 1)); }
   if (sc.stamps) { let s = sc.stamps[0][1]; sc.stamps.forEach(([t, v]) => { if (tl >= t) s = v; }); setStamp(s, 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E'); }
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
@@ -362,8 +414,9 @@ function render(dt) {
     map.setPaintProperty('ucdp-glow', 'circle-opacity', ['*', L.ucdp.cur * 0.7, ['max', 0.12, ['-', 1, ['/', ['-', n, ['get', 'n']], 60]]]]);
     let cnt = 0;
     stacks.forEach(s => { let k = 0; while (k < s.ns.length && s.ns[k] <= n) k++; cnt += k; if (k !== s.shown) { s.shown = k; map.setFeatureState({ source: 'stacks', id: s.id }, { k }); } });
-    $('#ucdpCount .v').textContent = cnt; $('#ucdpCount').style.opacity = clamp((tl - 4) / 1.5, 0, 1) * clamp((sc.dur - tl) / 1.5, 0, 1);
-    setStamp(fmtD(n), 'UCDP GED · FATAL EVENTS, PRECISE LOCATION');
+    const t0 = sc.datesFrom || 0;
+    $('#ucdpCount .v').textContent = cnt; $('#ucdpCount').style.opacity = clamp((tl - t0 - 4) / 1.5, 0, 1) * clamp((sc.dur - tl) / 1.5, 0, 1);
+    if (tl >= t0) setStamp(fmtD(n), 'UCDP GED · FATAL EVENTS, PRECISE LOCATION');
   } else if (L.ucdp.cur < 0.01) { map.setPaintProperty('ucdp-glow', 'circle-opacity', 0); }
 
   // tween logical layers
