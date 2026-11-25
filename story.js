@@ -3,6 +3,7 @@
    Camera keyframe: {t: seconds into scene, c:[lng,lat], z: zoom, p: pitch, b: bearing, e: 'io'|'lin'|'out'|'in'}
    Callout: {t, d (duration), ll:[lng,lat], title, sub, h (stem px), side: 'c'|'l'|'r'}
    layers: target opacity per named layer for the scene (anything omitted fades to 0).
+   plantModel: the plant's 3D massing model (models/znpp.glb); it also fades out by itself below zoom ~12.
    imagerySeq: [[t, layer], ...] crossfades base imagery (2 s) — s2021, s2023, s2024, s2025, esri, dnb20260124 (VIIRS night, 24 Jan 2026).
    stamps: [[t, text], ...] changes the top-right stamp during a scene.
    routeKinds: which analysed routes to draw ('diesel', 'crew-ua', 'crew-ru').
@@ -86,7 +87,7 @@ window.STORY = {
     id: 'lifeline', chapter: '01', name: 'Lifeline', dur: 30,
     stamp: 'PEACETIME · 1984–2022',
     vo: "During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat.",
-    layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1 },
+    layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1, plantModel: 1 },
     flow: 1,
     cam: [
       at(0, C.hostageEnd),
@@ -108,7 +109,7 @@ window.STORY = {
     id: 'occupation', chapter: '02', name: 'Occupation', dur: 26,
     stamp: '04 · 03 · 2022',
     vo: 'After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion.',
-    layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1 },
+    layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1, plantModel: 1 },
     cam: [
       at(0, C.lifelineEnd),
       { t: 9, c: [34.5, 47.53], z: 10.2, p: 55, b: 200, e: 'io' },
@@ -128,7 +129,7 @@ window.STORY = {
     id: 'draw', chapter: '03', name: 'It cannot be switched off', dur: 24,
     stamp: 'COLD SHUTDOWN · SINCE SEPT 2022',
     vo: 'Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor.',
-    layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4 },
+    layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4, plantModel: 1 },
     cam: [
       at(0, C.occEnd),
       { t: 9, c: [34.60, 47.505], z: 13.2, p: 60, b: 200, e: 'io' },
@@ -146,7 +147,7 @@ window.STORY = {
     id: 'water', chapter: '04', name: 'Water', dur: 54,
     stamp: '2021',
     vo: 'Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plant’s canals depleted.',
-    layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0 },
+    layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0, plantModel: 1 },
     imagerySeq: [[0, 's2021'], [13, 's2023'], [21, 's2024'], [29, 'esri'], [42, 's2025']],
     stamps: [[0, '2021 · RESERVOIR FULL'], [12, 'JUNE 2023 · DAM DESTROYED'], [21, '2024 · COOLING POND'], [29, 'SPRAY PONDS · WELLS SINCE AUG 2023'], [42, '2025 · POND AND CANALS']],
     wellsOn: [29, 42],
@@ -194,7 +195,7 @@ window.STORY = {
     id: 'repair', chapter: '06', name: 'Shelling and repair', dur: 64,
     stamp: '',   // driven by the timeline
     vo: 'In the meantime, Russia’s shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force.',
-    layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9 },
+    layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9, plantModel: 1 },
     routeKinds: ['crew-ua', 'crew-ru'],
     flow: 1,
     dates: [[0, '2022-03-04'], [3, '2022-03-04'], [21.3, '2025-06-01'], [61.2, '2026-11-24'], [64, '2026-11-24']],
@@ -228,7 +229,7 @@ window.STORY = {
     id: 'dependency', chapter: '07', name: 'Sovereignty becomes dependency', dur: 32,
     stamp: 'POWER FLOWS IN',
     vo: 'Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns.',
-    layers: { esri: 1, hillshade: 0.2, plant: 1, znpp: 1, particles: 1 },
+    layers: { esri: 1, hillshade: 0.2, plant: 1, znpp: 1, particles: 1, plantModel: 1 },
     flow: -1,
     cam: [
       at(0, C.repairEnd),
@@ -245,7 +246,7 @@ window.STORY = {
     id: 'supply', chapter: '08', name: 'Blackout and supply', dur: 40,
     stamp: 'COMPLETE BLACKOUTS · 2022–2024',
     vo: 'During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia’s shelling of roads and railways.',
-    layers: { s2024: 0.8, hillshade: 0.35, plant: 1, roads: 1, routes: 1, trucks: 1, rail: 1, railDisused: 1, supplyEvents: 1, frontline: 0.6, counter: 1 },
+    layers: { s2024: 0.8, hillshade: 0.35, plant: 1, roads: 1, routes: 1, trucks: 1, rail: 1, railDisused: 1, supplyEvents: 1, frontline: 0.6, counter: 1, plantModel: 1 },
     routeKinds: ['diesel'],
     counter: { n: 8, t0: 2.7, t1: 9.1, label: 'COMPLETE BLACKOUTS, 2022–2024 · ALL OFF-SITE POWER LOST', note: '27 by November 2026 · IAEA' },
     stamps: [[0, 'COMPLETE BLACKOUTS · 2022–2024'], [12.7, 'SUPPLY BY ROAD · OSM 2026']],

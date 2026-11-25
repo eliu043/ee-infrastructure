@@ -197,6 +197,10 @@ function buildLayers() {
   reg('trucks', pp('trucks', 'circle-opacity'), pp('trucks', 'circle-stroke-opacity'));
   reg('ucdp', pp('ucdp', 'circle-opacity', 0.9), pp('ucdp', 'circle-stroke-opacity', 0.9), pp('stacks', 'fill-extrusion-opacity', 0.85));
   reg('plant', pp('plant-ring', 'circle-stroke-opacity'), pp('plant-dot', 'circle-opacity'));
+  // the plant's massing model (plant3d.js: three.js custom layer, models/znpp.glb); fades out by itself when wide
+  if (window.PlantModel) map.addLayer(PlantModel.layer);
+  reg('plantModel', v => window.PlantModel && PlantModel.setOpacity(v));
+  addEventListener('plantmodel', () => { if (ST.scenes[cur]) buildLegend(ST.scenes[cur]); });
   reg('beacon', () => {});
   reg('trenches', pp('trenches', 'line-opacity')); reg('artillery', pp('artillery', 'circle-opacity'));
   reg('timeline', domOp('#timeline')); reg('log', domOp('#log')); reg('counter', domOp('#counter')); reg('ucdpcount', domOp('#ucdpCount'));
@@ -368,6 +372,7 @@ const sw = {
 const has = fc => fc && fc.features && fc.features.length > 0;
 const LEGEND = [
   ['plant', sw.dot('#fff', 10, true), 'Zaporizhzhia NPP'],
+  ['plantModel', sw.fill('linear-gradient(90deg,#5a1a12 0 40%,#8d8a80 40%)'), 'Plant model · OSM footprints, heights representative', () => !!(window.PlantModel && PlantModel.loaded)],
   ['znpp', sw.line('#ff6a55', 3, 'solid', 1), '750 kV Dniprovska line'],
   ['znpp', sw.line('#ffc56a', 3, 'solid', 1), '330 kV Ferosplavna-1 line'],
   ['particles', sw.dot('#ffd1c8', 6), 'Power flow'],
