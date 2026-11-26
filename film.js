@@ -76,6 +76,8 @@ const map = new maplibregl.Map({
       s2021: cached('s2021', s2(2021)), s2023: cached('s2023', s2(2023)), s2024: cached('s2024', s2(2024)), s2025: cached('s2025', s2(2025)),
       esri: cached('esri', { type: 'raster', tileSize: 256, maxzoom: 18, tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' }),
       lights: cached('lights', { type: 'raster', tileSize: 256, maxzoom: 8, tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png'], attribution: 'NASA Black Marble 2016 / GIBS' }),
+      ...(window.STORY.nightLights ? { eeLights: (b => ({ type: 'image', url: window.STORY.nightLights.url,
+        coordinates: [[b[0], b[3]], [b[2], b[3]], [b[2], b[1]], [b[0], b[1]]] }))(window.STORY.nightLights.bounds) } : {}),
       dem: dem(), demhs: dem(512),
       ...Object.fromEntries(['2026-01-24'].map(d => ['dnb' + d.replace(/-/g, ''), cached('dnb' + d.replace(/-/g, ''), { type: 'raster', tileSize: 256, maxzoom: 8,
         tiles: [`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance/default/${d}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`],
@@ -91,6 +93,7 @@ const map = new maplibregl.Map({
       { id: 'hillshade', type: 'hillshade', source: 'demhs', layout: { visibility: 'none' }, paint: { 'hillshade-exaggeration': 0, 'hillshade-shadow-color': '#000', 'hillshade-highlight-color': '#fff', 'hillshade-accent-color': '#000', 'hillshade-illumination-direction': 315 } },
       { id: 'dnb20260124', type: 'raster', source: 'dnb20260124', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.55, 'raster-saturation': -1 } },
       { id: 'lights', type: 'raster', source: 'lights', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0, 'raster-contrast': 0.2 } },
+      ...(window.STORY.nightLights ? [{ id: 'eeLights', type: 'raster', source: 'eeLights', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0 } }] : []),
     ],
   },
 });
@@ -223,7 +226,7 @@ function buildLayers() {
   if (D.landchange) ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k =>   // above imagery, below vectors
     map.addLayer({ id: 'lc-' + k, type: 'raster', source: 'lc-' + k, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0 } }, 'res-fill'));
   reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('s2023', pp('s2023', 'raster-opacity')); reg('s2025', pp('s2025', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
-  reg('lights', pp('lights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
+  reg('lights', pp('lights', 'raster-opacity')); if (window.STORY.nightLights) reg('eeLights', pp('eeLights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
   reg('reservoir', pp('res-fill', 'fill-opacity', 0.35));
   reg('frontline', pp('front-fill', 'fill-opacity', 0.12), pp('front-line', 'line-opacity', 0.75));
   reg('canals', pp('canals', 'line-opacity'));
@@ -462,6 +465,7 @@ const LEGEND = [
   ['ucdp', sw.fill('linear-gradient(#ff0f4f,#ff9a7a)'), 'UCDP fatal events'],
   ['trenches', sw.line('#ffdf6b', 1.5), 'Trenches', () => has(X.trenches)],
   ['artillery', sw.dot('#ffdf6b', 7), 'Artillery', () => has(X.artillery)],
+  ['eeLights', sw.fill('linear-gradient(90deg,#000004,#781c6d,#ed6925,#fcffa4)'), 'Night lights, Sep–Nov 2021 (VIIRS monthly · Earth Engine)'],
   ['lights', sw.fill('linear-gradient(90deg,#0b0d10,#ffe9a8)'), 'Night lights, 2016'],
   ['dnb20260124', sw.fill('linear-gradient(90deg,#0b0d10,#f2f2f2)'), 'Night lights, 24 Jan 2026 (VIIRS)'],
   ['water', sw.fill('rgba(92,200,255,.3)', '1px solid #8fdcff'), 'Cooling water'],
@@ -580,7 +584,7 @@ function endIntro() {
    copy of the terrain) all loaded all the time. A layer is now only visible while its slide uses it or it is still
    fading. Meanwhile the prefetcher fills the tile cache along the rest of the current slide's camera path, then the
    next slide's, then the previous one's, so Next and Back land on loaded tiles. */
-const RASTERS = ['s2021', 's2023', 's2024', 's2025', 'esri', 'lights', 'dnb20260124', 'hillshade'];
+const RASTERS = ['s2021', 's2023', 's2024', 's2025', 'esri', 'lights', 'dnb20260124', 'hillshade', ...(window.STORY.nightLights ? ['eeLights'] : [])];
 function needs(sc) {
   const n = new Set(RASTERS.filter(id => (sc.layers[id] || 0) > 0));
   (sc.imagerySeq || []).forEach(([, l]) => n.add(l));
@@ -695,7 +699,7 @@ function render(dt) {
   if (sc.wellsOn) { const [a, b] = sc.wellsOn; force('wells', clamp((tl - a) / 1.5, 0, 1) * clamp((b - tl) / 1.5, 0, 1)); }
   if (sc.stamps) { let s = sc.stamps[0][1]; sc.stamps.forEach(([t, v]) => { if (tl >= t) s = v; }); setStamp(s, 'ZAPORIZHZHIA NPP · 47.51°N 34.59°E'); }
   if (sc.imagerySwap) { const s = sc.imagerySwap, u = clamp((tl - s.t0) / (s.t1 - s.t0), 0, 1); force(s.from, 1 - u); force(s.to, u); }
-  if (sc.dim) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force(sc.dim.layer || 'lights', lerp(sc.dim.from, sc.dim.to, u)); }
+  if (sc.dim && !(sc.imagerySwap && sc.imagerySwap.to === (sc.dim.layer || 'lights') && tl < sc.dim.t0)) { const u = ease.io(clamp((tl - sc.dim.t0) / (sc.dim.t1 - sc.dim.t0), 0, 1)); force(sc.dim.layer || 'lights', lerp(sc.dim.from, sc.dim.to, u)); }
   if (sc.id === 'repair') updateRepair(sc, tl);
   if (sc.counter) { const k = sc.counter, n = Math.round(k.n * ease.out(clamp((tl - k.t0) / (k.t1 - k.t0), 0, 1))); $('#counter .v').textContent = n; $('#counter .k').textContent = k.label; $('#counter .note').textContent = k.note || '';
     $('#counter').style.opacity = clamp((tl - k.t0 + 1) / 1.5, 0, 1) * (isRec() ? clamp((sc.dur - tl) / 1.5, 0, 1) : 1); } // slides hold at the end, so no fade-out

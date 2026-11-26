@@ -1,0 +1,9 @@
+{
+ "collection": "NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG",
+ "band": "avg_rad",
+ "months": "2021-09..2021-11",
+ "reducer": "median",
+ "stretch": "log",
+ "floor_nW": 0.5,
+ "ceiling_nW": 60.0
+}

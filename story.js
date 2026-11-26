@@ -45,12 +45,14 @@ window.STORY = {
   exaggeration: 6,            // vertical exaggeration in wide shots (shown on screen)
   exaggerationClose: 1,       // …easing to true scale in close-ups (zoom ≥ 13); above 1 the elevation data warps buildings and riverbanks
   places: P,
+  // Earth Engine night lights (research/night-lights/gee_nightlights.py): VIIRS monthly, Sep–Nov 2021 median, EPSG:3857
+  nightLights: { url: 'nightlights/viirs-2021-autumn.jpg', bounds: [21.5, 43.5, 41.5, 53.5] },
   scenes: [
   /* COLD OPEN · KYIV ────────────────────────────── */
   {
     id: 'kyiv', chapter: '', name: 'Kyiv', dur: 28,
     vo: 'For a few hours on the last day of January this year, virtually all of Kyiv was submerged in darkness.',
-    more: [[10, "A week earlier, from orbit, the capital still glowed."]],
+    more: [[10, "A week earlier, from orbit, the capital still glowed."], [16.5, "In midwinter, a blackout is more than darkness. Heat, water and lifts for three million people all run on the same grid."]],
     layers: { dnb20260124: 1 },
     dim: { layer: 'dnb20260124', t0: 12.5, t1: 18.5, from: 1, to: 0.05 },
     stamps: [[0, 'KYIV · 24 JAN 2026 · SATELLITE'], [12.5, 'KYIV · 31 JAN 2026 · ILLUSTRATION']],
@@ -152,7 +154,7 @@ window.STORY = {
     id: 'water', chapter: '04', name: 'Water', dur: 60,
     stamp: '2021',
     vo: "Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP has come to rely on newly drilled wells, as the remaining water in the nearby Zaporizhzhia Thermal Power Plant’s canals ran down.",
-    more: [[23.5, "Beyond its old shores, the land is drying, the irrigated fields of the south bank most of all."], [38, "Eleven wells now stand between six reactors and the heat they still produce."], [50, "And the cooling pond itself has shrunk by about a third since 2023."]],
+    more: [[23.5, "Beyond its old shores, the land is drying, the irrigated fields of the south bank most of all."], [30.2, "And the cooling pond itself has shrunk by about a third since 2023."], [38, "Eleven wells now stand between six reactors and the heat they still produce."], [43.8, "Where exactly they were drilled has never been published."], [50, "In 2025, a dam was built across the intake channel, holding what water remains in a smaller pond."]],
     layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0, plantModel: 1 },
     imagerySeq: [[0, 's2021'], [12, 's2023'], [27, 's2024'], [35, 'esri'], [48, 's2025']],
     overlaySeq: [[0, null], [15.5, 'ndvi-2021'], [19.5, 'ndvi-2025'], [23.5, 'ndmi-change'], [28, null]],
@@ -288,7 +290,7 @@ window.STORY = {
     stamp: '',  // driven by event accumulation after t=12
     stamps: [[0, 'FORTIFICATIONS · JUNE–OCTOBER 2025']],
     vo: "Furthermore, trenches are carved into the soil surrounding ZNPP, and fighting positions turn the landscape into a military frontier, from which Ukrainian towns across the river are shelled.",
-    more: [[20.5, "Across the drained reservoir, Nikopol has recorded more deadly strikes than any other town near the plant."]],
+    more: [[20.5, "Across the drained reservoir, Nikopol has recorded more deadly strikes than any other town near the plant."], [28, "Marhanets, too, lies within range."]],
     layers: { s2024: 1, hillshade: 0.4, plant: 1, fort: 1, ucdp: 1, frontline: 0.8, trenches: 1, artillery: 1 },
     dates: [[0, '2022-02-24'], [13, '2022-02-24'], [30, '2026-11-24'], [34, '2026-11-24']],
     datesFrom: 13,
@@ -317,8 +319,10 @@ window.STORY = {
     id: 'winter', chapter: '10', name: 'Winter', dur: 25,
     stamp: 'WINTER 2026–27',
     vo: 'As winter approaches, more cities across Ukraine are bracing for long dark months while ZNPP remains suspended between occupation, disrepair, and the threat of nuclear catastrophe.',
-    layers: { lights: 1, s2024: 0.18, hillshade: 0.25, plant: 1, beacon: 1 },
-    dim: { t0: 7, t1: 21, from: 1, to: 0.12 },
+    layers: { eeLights: 1, lights: 1, s2024: 0.18, hillshade: 0.25, plant: 1, beacon: 1 },
+    imagerySwap: { from: 'eeLights', to: 'lights', t0: 5, t1: 8 },   // measured pre-war lights (Earth Engine) → Black Marble
+    dim: { t0: 9, t1: 21, from: 1, to: 0.12 },                        // …then the illustrative fade
+    stamps: [[0, 'NIGHT LIGHTS · SEP–NOV 2021 · VIIRS (EARTH ENGINE)'], [6.5, 'NIGHT LIGHTS · NASA BLACK MARBLE · PRE-WAR'], [9.5, 'WINTER 2026–27 · DIMMING ILLUSTRATIVE']],
     cam: [
       at(0, C.frontierEnd),
       { t: 11, c: [32.0, 48.6], z: 5.4, p: 30, b: 350, e: 'io' },
@@ -331,20 +335,31 @@ window.STORY = {
       { t: 14, d: 10, ll: P.dnipro, title: 'Dnipro', sub: '', h: 30 },
       { t: 15, d: 9, ll: P.znpp, title: 'ZNPP', sub: 'Suspended', h: 50, side: 'l' },
     ],
-    sources: 'Lights dimmed for illustration — baseline NASA Black Marble 2016; not a measurement of 2026 outages',
-    credit: 'Dimming illustrative · NASA Black Marble 2016',   // short line for the bottom-left credits
+    sources: 'Night lights: NOAA VIIRS DNB monthly (VCMSLCFG), Sep–Nov 2021 median, via Google Earth Engine (studio EE_VIIRS method) · then NASA Black Marble 2016 · lights dimmed for illustration, not a measurement of 2026 outages',
+    credit: 'VIIRS monthly 2021 via Earth Engine · NASA Black Marble 2016 · dimming illustrative',   // short line for the bottom-left credits
   },
   /* END ─────────────────────────────────────────── */
   {
-    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 14,
-    stamp: '', vo: '', capUntil: 1,
+    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 32,
+    stamp: 'ZAPORIZHZHIA NPP · NOVEMBER 2026',
+    vo: 'Power lines, roads, reservoirs and canals once carried everyday life. At Zaporizhzhia, each has been turned into an instrument of power: cut, drained, fortified, held hostage. This is slow violence, and it is written into the land itself.',
+    capUntil: 22.5,              // conclusion first; the title and credits follow
     endCard: true,
-    layers: { lights: 0.12, s2024: 0.18, plant: 1, beacon: 1 },
+    layers: { s2024: 0.9, hillshade: 0.35, plant: 1, grid: 0.8, gridflow: 0.6, roads: 0.7, routes: 0.8, rail: 0.6,
+      reservoir: 0.5, water: 1, fort: 1, frontline: 0.7, ucdp: 0.5 },
+    routeKinds: ['diesel', 'crew-ua', 'crew-ru'],
     cam: [
       at(0, C.winterEnd),
-      { t: 14, c: [31.9, 48.55], z: 5.5, p: 38, b: 12, e: 'lin' },
+      { t: 9, c: [34.55, 47.52], z: 10.2, p: 60, b: 330, e: 'io' },
+      { t: 20, c: [34.56, 47.52], z: 10.6, p: 62, b: 30, e: 'lin' },
+      { t: 32, c: [32.6, 48.4], z: 6, p: 38, b: 10, e: 'io' },
     ],
-    callouts: [],
+    callouts: [
+      { t: 11.5, d: 9.5, ll: P.crossing, title: 'Cut', sub: 'Power lines', h: 70, side: 'r' },
+      { t: 12.5, d: 8.5, ll: [34.33, 47.45], title: 'Drained', sub: 'Kakhovka reservoir', h: 60, side: 'l' },
+      { t: 13.5, d: 7.5, ll: [34.5258, 47.5186], title: 'Fortified', sub: 'Trenches and positions', h: 110, side: 'l' },
+      { t: 14.5, d: 6.5, ll: P.znpp, title: 'Held hostage', sub: 'Zaporizhzhia NPP', h: 150 },
+    ],
     sources: '',
   },
   ],
