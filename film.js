@@ -502,8 +502,10 @@ function slideHTML(sc, dir) {
     <p class="lede">${esc(sc.vo)}</p><p class="src">Sources · ${esc(CREDITS)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
-    <p class="lede">${esc(sc.vo)}</p></div>`;
+    <p class="lede">${esc(sc.vo)}</p>${(sc.more || []).map(([, x]) => `<p class="lede more">${esc(x)}</p>`).join('')}</div>`;
 }
+// the narration line being spoken at scene time tl (captions follow the soundtrack's cue times)
+const voAt = (sc, tl) => { let x = sc.vo || ''; (sc.more || []).forEach(([t, s]) => { if (tl >= t) x = s; }); return x; };
 function renderPanel(sc, dir) {
   const pb = $('#pbody'); pb.innerHTML = slideHTML(sc, dir); pb.scrollTop = 0;
   setAttrib(sc);
@@ -737,6 +739,7 @@ function render(dt) {
   $('#title').classList.toggle('on', !!tOn);
   $('#title .st').textContent = sc.endCard ? 'Slow violence · energy · water · territory' : 'The militarization of energy infrastructure · Zaporizhzhia NPP';
   document.body.classList.toggle('tl', L.timeline.cur > 0.5);
+  const capTxt = voAt(sc, tl); if ($('#cap').textContent !== capTxt) $('#cap').textContent = capTxt;
   $('#cap').classList.toggle('on', capOn && !!sc.vo && tl > 1.5 && tl < (sc.capUntil || sc.dur - 0.4) && !chapterCard);
   if (isRec()) $('#readout').innerHTML = `${c.c[1].toFixed(4)}°N  ${c.c[0].toFixed(4)}°E<br>ALT Z${c.z.toFixed(1)} · TILT ${c.p.toFixed(0)}° · HDG ${(((c.b % 360) + 360) % 360).toFixed(0).padStart(3, '0')}°<br>TERRAIN ×${ex} VERTICAL`;
   $('#scrub .fill').style.width = (clamp(tl / sc.dur, 0, 1) * 100) + '%';

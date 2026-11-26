@@ -8,6 +8,13 @@
    "id": "kyiv",
    "start": 1.6,
    "end": 8.46,
+   "limit": 9.7,
+   "fits": true
+  },
+  {
+   "id": "kyiv.1",
+   "start": 10.0,
+   "end": 13.38,
    "limit": 27.6,
    "fits": true
   },
@@ -22,13 +29,27 @@
    "id": "lifeline",
    "start": 61.6,
    "end": 71.37,
+   "limit": 72.2,
+   "fits": true
+  },
+  {
+   "id": "lifeline.1",
+   "start": 72.5,
+   "end": 82.94,
    "limit": 85.6,
    "fits": true
   },
   {
    "id": "occupation",
    "start": 91.6,
-   "end": 101.28,
+   "end": 101.27,
+   "limit": 102.0,
+   "fits": true
+  },
+  {
+   "id": "occupation.1",
+   "start": 102.3,
+   "end": 110.92,
    "limit": 111.6,
    "fits": true
   },
@@ -36,48 +57,125 @@
    "id": "draw",
    "start": 117.6,
    "end": 127.04,
+   "limit": 127.5,
+   "fits": true
+  },
+  {
+   "id": "draw.1",
+   "start": 127.8,
+   "end": 132.42,
    "limit": 135.6,
    "fits": true
   },
   {
    "id": "water",
    "start": 141.6,
-   "end": 158.47,
+   "end": 158.83,
+   "limit": 159.2,
+   "fits": true
+  },
+  {
+   "id": "water.1",
+   "start": 159.5,
+   "end": 165.69,
+   "limit": 173.7,
+   "fits": true
+  },
+  {
+   "id": "water.2",
+   "start": 174.0,
+   "end": 179.34,
+   "limit": 185.7,
+   "fits": true
+  },
+  {
+   "id": "water.3",
+   "start": 186.0,
+   "end": 191.16,
    "limit": 195.6,
    "fits": true
   },
   {
    "id": "notyet",
    "start": 201.6,
-   "end": 207.54,
+   "end": 207.37,
    "limit": 210.6,
    "fits": true
   },
   {
    "id": "repair",
    "start": 216.6,
-   "end": 228.97,
+   "end": 229.02,
+   "limit": 230.7,
+   "fits": true
+  },
+  {
+   "id": "repair.1",
+   "start": 231.0,
+   "end": 237.29,
+   "limit": 239.2,
+   "fits": true
+  },
+  {
+   "id": "repair.2",
+   "start": 239.5,
+   "end": 249.44,
+   "limit": 250.7,
+   "fits": true
+  },
+  {
+   "id": "repair.3",
+   "start": 251.0,
+   "end": 260.14,
+   "limit": 262.7,
+   "fits": true
+  },
+  {
+   "id": "repair.4",
+   "start": 263.0,
+   "end": 273.66,
    "limit": 274.6,
    "fits": true
   },
   {
    "id": "dependency",
    "start": 280.6,
-   "end": 292.82,
+   "end": 292.74,
+   "limit": 293.7,
+   "fits": true
+  },
+  {
+   "id": "dependency.1",
+   "start": 294.0,
+   "end": 301.2,
    "limit": 306.6,
    "fits": true
   },
   {
    "id": "supply",
    "start": 312.6,
-   "end": 332.49,
+   "end": 330.92,
+   "limit": 333.2,
+   "fits": true
+  },
+  {
+   "id": "supply.1",
+   "start": 333.5,
+   "end": 343.99,
    "limit": 346.6,
    "fits": true
   },
   {
    "id": "frontier",
    "start": 352.6,
-   "end": 365.92,
+   "end": 365.62,
+   "limit": 367.2,
+   "fits": true
+  },
+  {
+   "id": "frontier.1",
+   "start": 367.5,
+   "end": 374.38,
    "limit": 380.6,
    "fits": true
   },

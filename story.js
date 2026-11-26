@@ -5,6 +5,7 @@
    layers: target opacity per named layer for the scene (anything omitted fades to 0).
    plantModel: the plant's 3D massing model (models/znpp.glb); it also fades out by itself below zoom ~12.
    imagerySeq: [[t, layer], ...] crossfades base imagery (2 s) — s2021, s2023, s2024, s2025, esri, dnb20260124 (VIIRS night, 24 Jan 2026).
+   more: [[t, text], ...] further narration lines, t = seconds into the scene (spoken and captioned).
    stamps: [[t, text], ...] changes the top-right stamp during a scene.
    routeKinds: which analysed routes to draw ('diesel', 'crew-ua', 'crew-ru').
    titleCard: true or {t0, t1}; capUntil: hide the caption after this many seconds.
@@ -49,6 +50,7 @@ window.STORY = {
   {
     id: 'kyiv', chapter: '', name: 'Kyiv', dur: 28,
     vo: 'For a few hours on the last day of January this year, virtually all of Kyiv was submerged in darkness.',
+    more: [[10, "A week earlier, from orbit, the capital still glowed."]],
     layers: { dnb20260124: 1 },
     dim: { layer: 'dnb20260124', t0: 12.5, t1: 18.5, from: 1, to: 0.05 },
     stamps: [[0, 'KYIV · 24 JAN 2026 · SATELLITE'], [12.5, 'KYIV · 31 JAN 2026 · ILLUSTRATION']],
@@ -87,6 +89,7 @@ window.STORY = {
     id: 'lifeline', chapter: '01', name: 'Lifeline', dur: 30,
     stamp: 'PEACETIME · 1984–2022',
     vo: "During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat.",
+    more: [[16.5, "Six reactors, six gigawatts: roughly a fifth of the country’s electricity, carried away on seven-hundred-fifty and three-hundred-thirty kilovolt lines."]],
     layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1, plantModel: 1 },
     flow: 1,
     cam: [
@@ -108,7 +111,8 @@ window.STORY = {
   {
     id: 'occupation', chapter: '02', name: 'Occupation', dur: 26,
     stamp: '04 · 03 · 2022',
-    vo: 'After the 2022 Russian occupation of the left bank of the Dnieper River, ZNPP became an instrument of coercion.',
+    vo: "After the 2022 Russian occupation of the left bank of the Dnipro River, ZNPP became an instrument of coercion.",
+    more: [[16.3, "The river became the front line. Across it, Nikopol and Marhanets stayed Ukrainian, within sight of the reactors."]],
     layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1, plantModel: 1 },
     cam: [
       at(0, C.lifelineEnd),
@@ -129,6 +133,7 @@ window.STORY = {
     id: 'draw', chapter: '03', name: 'It cannot be switched off', dur: 24,
     stamp: 'COLD SHUTDOWN · SINCE SEPT 2022',
     vo: 'Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor.',
+    more: [[15.8, "Six shut-down reactors still need cooling, every hour of every day."]],
     layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4, plantModel: 1 },
     cam: [
       at(0, C.occEnd),
@@ -146,7 +151,8 @@ window.STORY = {
   {
     id: 'water', chapter: '04', name: 'Water', dur: 60,
     stamp: '2021',
-    vo: 'Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP became reliant on newly drilled wells after the remaining water from the nearby Zaporizhzhia Thermal Power Plant’s canals depleted.',
+    vo: "Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP has come to rely on newly drilled wells, as the remaining water in the nearby Zaporizhzhia Thermal Power Plant’s canals ran down.",
+    more: [[23.5, "Beyond its old shores, the land is drying, the irrigated fields of the south bank most of all."], [38, "Eleven wells now stand between six reactors and the heat they still produce."], [50, "And the cooling pond itself has shrunk by about a third since 2023."]],
     layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0, plantModel: 1 },
     imagerySeq: [[0, 's2021'], [12, 's2023'], [27, 's2024'], [35, 'esri'], [48, 's2025']],
     overlaySeq: [[0, null], [15.5, 'ndvi-2021'], [19.5, 'ndvi-2025'], [23.5, 'ndmi-change'], [28, null]],
@@ -182,7 +188,7 @@ window.STORY = {
   {
     id: 'notyet', chapter: '05', name: 'Not so soon', dur: 15,
     stamp: 'INTENTION · NO DATE',
-    vo: 'Eventually Russia wants to connect ZNPP to the national grid, but not so soon.',
+    vo: "Eventually, Russia wants to connect ZNPP to its own grid, but not so soon.",
     layers: { s2024: 1, hillshade: 0.35, plant: 1, grid: 0.25, frontline: 0.6, proposed: 1 },
     cam: [
       at(0, C.waterEnd),
@@ -200,7 +206,8 @@ window.STORY = {
   {
     id: 'repair', chapter: '06', name: 'Shelling and repair', dur: 64,
     stamp: '',   // driven by the timeline
-    vo: 'In the meantime, Russia’s shelling of its facilities and powerline saw Ukrainian and Russian workers rushing to its repair, exerting pressure on local road networks and labor force.',
+    vo: "In the meantime, shelling of the plant’s facilities and power lines saw Ukrainian and Russian workers rushing to repair them, exerting pressure on local road networks and labor force.",
+    more: [[20, "Repairs now need local ceasefires, brokered by the IAEA, so crews can work under the guns."], [28.5, "In September 2025, damage one and a half kilometres from the plant cut its last line. It ran on diesel for a month."], [40, "Where the line crosses the river, it crosses the front. Crews repaired it on pylons a hundred metres above the water."], [52, "On the north bank, Ukrainian crews work within sight of Nikopol. By August 2026, the plant had lost off-site power twenty-six times."]],
     layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9, plantModel: 1 },
     routeKinds: ['crew-ua', 'crew-ru'],
     flow: 1,
@@ -234,7 +241,8 @@ window.STORY = {
   {
     id: 'dependency', chapter: '07', name: 'Sovereignty becomes dependency', dur: 32,
     stamp: 'POWER FLOWS IN',
-    vo: 'Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians, now draws on electricity from the grid to prevent total meltdowns.',
+    vo: "Energy sovereignty becomes dependency – what was once a source of light and heat for Ukrainians now draws on electricity from the grid to keep its reactors cool.",
+    more: [[19, "The plant that once sent power out across Ukraine now draws it in, through the same lines that are shelled and repaired."]],
     layers: { esri: 1, hillshade: 0.2, plant: 1, znpp: 1, particles: 1, plantModel: 1 },
     flow: -1,
     cam: [
@@ -251,7 +259,8 @@ window.STORY = {
   {
     id: 'supply', chapter: '08', name: 'Blackout and supply', dur: 40,
     stamp: 'COMPLETE BLACKOUTS · 2022–2024',
-    vo: 'During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose delivery was challenged by Russia’s shelling of roads and railways.',
+    vo: "During the heaviest attacks between 2022 and 2024, ZNPP sank into a state of complete blackout eight times, losing all off-site power and being forced to rely on 20 reserve diesel generators, whose fuel arrives by road, through a war zone.",
+    more: [[26.5, "Forty-five deadly events have been recorded within two kilometres of the route. Its final thirty kilometres run within twenty of the front."]],
     layers: { s2024: 0.8, hillshade: 0.35, plant: 1, roads: 1, routes: 1, trucks: 1, rail: 1, railDisused: 1, supplyEvents: 1, frontline: 0.6, counter: 1, plantModel: 1 },
     routeKinds: ['diesel'],
     counter: { n: 8, t0: 2.7, t1: 9.1, label: 'COMPLETE BLACKOUTS, 2022–2024 · ALL OFF-SITE POWER LOST', note: '27 by November 2026 · IAEA' },
@@ -278,7 +287,8 @@ window.STORY = {
     id: 'frontier', chapter: '09', name: 'Frontier', dur: 34,
     stamp: '',  // driven by event accumulation after t=12
     stamps: [[0, 'FORTIFICATIONS · JUNE–OCTOBER 2025']],
-    vo: 'Furthermore, trenches are carved into the soil surrounding ZNPP, and artillery positions turn the landscape into a military frontier from which Ukrainian towns across the river are targeted.',
+    vo: "Furthermore, trenches are carved into the soil surrounding ZNPP, and fighting positions turn the landscape into a military frontier, from which Ukrainian towns across the river are shelled.",
+    more: [[20.5, "Across the drained reservoir, Nikopol has recorded more deadly strikes than any other town near the plant."]],
     layers: { s2024: 1, hillshade: 0.4, plant: 1, fort: 1, ucdp: 1, frontline: 0.8, trenches: 1, artillery: 1 },
     dates: [[0, '2022-02-24'], [13, '2022-02-24'], [30, '2026-11-24'], [34, '2026-11-24']],
     datesFrom: 13,
@@ -296,7 +306,7 @@ window.STORY = {
       { t: 4, d: 4.5, ll: [34.5258, 47.5186], title: 'Zig-zag fighting trenches · west bank', sub: 'Extended and linked into one trench, June 2025', h: 80 },
       { t: 8, d: 4, ll: [34.5418, 47.527], title: 'Checkpoint, vehicle scrapes, ammunition store?', sub: 'North-west bank of the cooling pond', h: 70, side: 'r' },
       { t: 11.5, d: 5, ll: [34.5862, 47.5172], title: '11 sangars on the plant perimeter', sub: 'Raised guard posts, most in anti-drone cages, June 2025', h: 90, side: 'l' },
-      { t: 19, d: 13, ll: P.nikopol, title: 'Nikopol', sub: 'Most-recorded location on the right bank', h: 90 },
+      { t: 19, d: 13, ll: P.nikopol, title: 'Nikopol', sub: 'Most deadly events of any town near the plant · UCDP', h: 90 },
       { t: 21, d: 11, ll: P.marhanets, title: 'Marhanets', sub: 'Across the drained reservoir', h: 70, side: 'r' },
     ],
     sources: 'Fortifications: traced from McKenzie Intelligence / Greenpeace Ukraine (Pléiades Neo, Jun–Oct 2025), approximate · Events: UCDP GED, fatal events only (n = 829)',

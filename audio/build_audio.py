@@ -40,7 +40,7 @@ CACHE = HERE / "cache"; CACHE.mkdir(exist_ok=True)
 
 # ---------- scenes from story.js ----------
 js = ("global.window={};require('vm').runInThisContext(require('fs').readFileSync('../story.js','utf8'));"
-      "let a=0;console.log(JSON.stringify(window.STORY.scenes.map(s=>{const o={id:s.id,start:a,dur:s.dur,vo:s.vo||'',"
+      "let a=0;console.log(JSON.stringify(window.STORY.scenes.map(s=>{const o={id:s.id,start:a,dur:s.dur,vo:s.vo||'',more:s.more||[],"
       "chapter:s.chapter||'',capUntil:s.capUntil||null};a+=s.dur;return o;})))")
 scenes = json.loads(subprocess.check_output(["node", "-e", js], cwd=HERE))
 TOTAL = sum(s["dur"] for s in scenes)
@@ -121,15 +121,21 @@ print(f"engine {args.engine} · voice {VOICE}")
 if True:
     for s in scenes:
         if not s["vo"]: continue
-        x = tts(s["vo"])
         lead = 5.6 if s["chapter"] else 1.6              # wait for the chapter card, as the captions do
-        t0 = s["start"] + lead
         limit = s["start"] + (s["capUntil"] or s["dur"]) - 0.4
-        dur = len(x) / SR
-        fits = t0 + dur <= limit
-        i = int(t0 * SR); voice[i:i + len(x)] += x[: max(0, N - i)]
-        cues.append({"id": s["id"], "start": round(t0, 2), "end": round(t0 + dur, 2), "limit": round(limit, 2), "fits": fits})
-        print(f"{s['id']:<11} {t0:6.1f}–{t0 + dur:6.1f}s  ({dur:4.1f}s)  {'ok' if fits else f'OVERRUNS chapter end {limit:.1f}s'}")
+        lines = [(lead, s["vo"])] + [(float(t), txt) for t, txt in s["more"]]
+        prev_end = 0.0
+        for k, (lt, txt) in enumerate(lines):
+            x = tts(txt)
+            t0 = s["start"] + lt
+            dur = len(x) / SR
+            nxt = s["start"] + lines[k + 1][0] - 0.3 if k + 1 < len(lines) else limit
+            fits = t0 + dur <= nxt and t0 >= prev_end
+            i = int(t0 * SR); voice[i:i + len(x)] += x[: max(0, N - i)]
+            prev_end = t0 + dur
+            cid = s["id"] if k == 0 else f"{s['id']}.{k}"
+            cues.append({"id": cid, "start": round(t0, 2), "end": round(t0 + dur, 2), "limit": round(nxt, 2), "fits": fits})
+            print(f"{cid:<13} {t0:6.1f}–{t0 + dur:6.1f}s  ({dur:4.1f}s)  {'ok' if fits else f'OVERRUNS next cue/end {nxt:.1f}s'}")
 voice *= 0.9 / max(1e-6, np.abs(voice).max())
 
 # ---------- backing: low drone that darkens chapter by chapter ----------
