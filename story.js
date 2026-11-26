@@ -340,33 +340,33 @@ window.STORY = {
   },
   /* END ─────────────────────────────────────────── */
   {
-    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 60,
+    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 55,
     stamp: 'ZAPORIZHZHIA NPP · NOVEMBER 2026',
     // closing follows the Center for Spatial Technologies' method (crimea-heritage.spatialtech.info):
-    // the conduct, the law it engages, back to the landscape, then how the work was made
-    vo: 'Power lines, roads, reservoirs and canals once carried everyday life. At Zaporizhzhia, each has been turned into an instrument of power: cut, drained, fortified, held hostage. This is slow violence, and it is written into the land itself.',
-    more: [[21.5, "International humanitarian law sets dams and nuclear power stations apart as works containing dangerous forces. They must not be attacked, and military positions should not be placed near them."],
-           [36.8, "Here, the dam is gone and the plant is fortified. In Kyiv, the lights came back after a few hours. At Zaporizhzhia, there is no switch to turn them back on."]],
-    capUntil: 51,                // conclusion first; the title and credits follow
+    // the law, the conduct it is set against, the landscape, then how the work was made (panel)
+    vo: 'International humanitarian law sets dams and nuclear power stations apart as works containing dangerous forces. They must not be attacked, and military positions should not be placed near them.',
+    more: [[16.6, "Here, the dam has been destroyed and the power plant has been occupied by Russian forces."],
+           [23.3, "Power lines, roads, reservoirs and canals once carried everyday life. At Zaporizhzhia, each has been turned into an instrument of power: cut, drained, fortified, held hostage. This slow violence is a demonstration of the power of infrastructure written into the land itself."]],
+    capUntil: 46,                // conclusion first; the title and credits follow
     endCard: true,
     layers: { s2024: 0.9, hillshade: 0.35, plant: 1, grid: 0.8, gridflow: 0.6, roads: 0.7, routes: 0.8, rail: 0.6,
       reservoir: 0.5, water: 1, fort: 1, frontline: 0.7, ucdp: 0.5 },
     routeKinds: ['diesel', 'crew-ua', 'crew-ru'],
     cam: [
       at(0, C.winterEnd),
-      { t: 9, c: [34.55, 47.52], z: 10.2, p: 60, b: 330, e: 'io' },
-      { t: 20, c: [34.56, 47.52], z: 10.6, p: 62, b: 30, e: 'lin' },
-      { t: 28, c: [33.98, 47.18], z: 8.1, p: 48, b: 15, e: 'io' },     // dam and plant in one view
-      { t: 49, c: [34.1, 47.25], z: 8.4, p: 52, b: 35, e: 'lin' },
-      { t: 60, c: [32.6, 48.4], z: 6, p: 38, b: 10, e: 'io' },
+      { t: 10, c: [33.98, 47.18], z: 8.1, p: 48, b: 15, e: 'io' },     // dam and plant in one view
+      { t: 22, c: [34.1, 47.25], z: 8.4, p: 52, b: 35, e: 'lin' },
+      { t: 31, c: [34.55, 47.52], z: 10.2, p: 60, b: 330, e: 'io' },   // down to the plant
+      { t: 44, c: [34.56, 47.52], z: 10.6, p: 62, b: 30, e: 'lin' },
+      { t: 55, c: [32.6, 48.4], z: 6, p: 38, b: 10, e: 'io' },
     ],
     callouts: [
-      { t: 11.5, d: 9.5, ll: P.crossing, title: 'Cut', sub: 'Power lines', h: 70, side: 'r' },
-      { t: 12.5, d: 8.5, ll: [34.33, 47.45], title: 'Drained', sub: 'Kakhovka reservoir', h: 60, side: 'l' },
-      { t: 13.5, d: 7.5, ll: [34.5258, 47.5186], title: 'Fortified', sub: 'Trenches and positions', h: 110, side: 'l' },
-      { t: 14.5, d: 6.5, ll: P.znpp, title: 'Held hostage', sub: 'Zaporizhzhia NPP', h: 150 },
-      { t: 26, d: 14.5, ll: [33.37, 46.778], title: 'Kakhovka dam', sub: 'Destroyed 6 June 2023 · AP I Art. 56', h: 90, side: 'l' },
-      { t: 27, d: 22, ll: P.znpp, title: 'Zaporizhzhia NPP', sub: 'Fortified grounds · AP I Art. 56(5)', h: 110, side: 'r' },
+      { t: 5, d: 19, ll: [33.37, 46.778], title: 'Kakhovka dam', sub: 'Destroyed 6 June 2023 · AP I Art. 56', h: 90, side: 'l' },
+      { t: 6, d: 18, ll: P.znpp, title: 'Zaporizhzhia NPP', sub: 'Occupied since March 2022 · AP I Art. 56(5)', h: 110, side: 'r' },
+      { t: 33.4, d: 11, ll: P.crossing, title: 'Cut', sub: 'Power lines', h: 70, side: 'r' },
+      { t: 34.4, d: 10, ll: [34.33, 47.45], title: 'Drained', sub: 'Kakhovka reservoir', h: 60, side: 'l' },
+      { t: 35.4, d: 9, ll: [34.5258, 47.5186], title: 'Fortified', sub: 'Trenches and positions', h: 110, side: 'l' },
+      { t: 36.4, d: 8, ll: P.znpp, title: 'Held hostage', sub: 'Zaporizhzhia NPP', h: 150 },
     ],
     legal: [
       'Additional Protocol I to the Geneva Conventions (1977), Art. 56 — works and installations containing dangerous forces (dams, nuclear electrical generating stations): not to be made the object of attack; Art. 56(5): parties shall endeavour to avoid locating military objectives in their vicinity',

@@ -2,7 +2,7 @@
  "engine": "kokoro",
  "voice": "bm_george",
  "rate": 165,
- "total": 467,
+ "total": 462,
  "cues": [
   {
    "id": "kyiv",
@@ -210,22 +210,22 @@
   {
    "id": "end",
    "start": 408.6,
-   "end": 426.96,
-   "limit": 428.2,
+   "end": 422.76,
+   "limit": 423.3,
    "fits": true
   },
   {
    "id": "end.1",
-   "start": 428.5,
-   "end": 442.66,
-   "limit": 443.5,
+   "start": 423.6,
+   "end": 429.26,
+   "limit": 430.0,
    "fits": true
   },
   {
    "id": "end.2",
-   "start": 443.8,
-   "end": 455.95,
-   "limit": 457.6,
+   "start": 430.3,
+   "end": 451.25,
+   "limit": 452.6,
    "fits": true
   }
  ]
