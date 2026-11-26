@@ -91,7 +91,7 @@ window.STORY = {
     id: 'lifeline', chapter: '01', name: 'Lifeline', dur: 30,
     stamp: 'PEACETIME · 1984–2022',
     vo: "During peace time, the Zaporizhzhia Nuclear Power Plant was Ukraine's energy lifeline, lighting cities and warming homes through residual heat.",
-    more: [[16.5, "Six reactors, six gigawatts: roughly a fifth of the country’s electricity, carried away on seven-hundred-fifty and three-hundred-thirty kilovolt lines."]],
+    more: [[16, "Six reactors, six gigawatts, comprising roughly a fifth of the country’s electricity. All of which was carried away on seven-hundred-fifty and three-hundred-thirty kilovolt lines."]],
     layers: { s2021: 1, hillshade: 0.35, grid: 0.9, gridflow: 0.9, znpp: 1, particles: 1, plant: 1, plantModel: 1 },
     flow: 1,
     cam: [
@@ -111,21 +111,21 @@ window.STORY = {
   },
   /* 02 ─────────────────────────────────────────── */
   {
-    id: 'occupation', chapter: '02', name: 'Occupation', dur: 26,
+    id: 'occupation', chapter: '02', name: 'Occupation', dur: 27,
     stamp: '04 · 03 · 2022',
     vo: "After the 2022 Russian occupation of the left bank of the Dnipro River, ZNPP became an instrument of coercion.",
-    more: [[16.3, "The river became the front line. Across it, Nikopol and Marhanets stayed Ukrainian, within sight of the reactors."]],
+    more: [[15.8, "The river became the new front line. Across it, Nikopol and Marhanets remained under Ukrainian control, within sight of the reactors."]],
     layers: { s2021: 1, hillshade: 0.35, reservoir: 0.6, frontline: 1, grid: 0.35, znpp: 0.6, plant: 1, plantModel: 1 },
     cam: [
       at(0, C.lifelineEnd),
       { t: 9, c: [34.5, 47.53], z: 10.2, p: 55, b: 200, e: 'io' },
-      at(26, C.occEnd, 'io'),
+      at(27, C.occEnd, 'io'),
     ],
     callouts: [
-      { t: 5, d: 20, ll: P.znpp, title: 'Seized 4 March 2022', sub: 'Left (south) bank — under Russian occupation', h: 150, side: 'r' },
-      { t: 9, d: 16, ll: P.nikopol, title: 'Nikopol', sub: 'Right bank — Ukrainian-held', h: 70, side: 'l' },
-      { t: 11, d: 14, ll: P.marhanets, title: 'Marhanets', sub: 'Right bank — Ukrainian-held', h: 50, side: 'r' },
-      { t: 14, d: 11, ll: [34.47, 47.535], title: 'Frontline', sub: 'Runs along the Dnipro / Kakhovka reservoir', h: 110, side: 'l' },
+      { t: 5, d: 21, ll: P.znpp, title: 'Seized 4 March 2022', sub: 'Left (south) bank — under Russian occupation', h: 150, side: 'r' },
+      { t: 9, d: 17, ll: P.nikopol, title: 'Nikopol', sub: 'Right bank — Ukrainian-held', h: 70, side: 'l' },
+      { t: 11, d: 15, ll: P.marhanets, title: 'Marhanets', sub: 'Right bank — Ukrainian-held', h: 50, side: 'r' },
+      { t: 14, d: 12, ll: [34.47, 47.535], title: 'Frontline', sub: 'Runs along the Dnipro / Kakhovka reservoir', h: 110, side: 'l' },
     ],
     sources: 'Reservoir outline: OSM, 2023-05-01 · Frontline drawn schematically along the river',
     credit: 'Reservoir: OSM · frontline schematic',   // short line for the bottom-left credits
@@ -135,7 +135,7 @@ window.STORY = {
     id: 'draw', chapter: '03', name: 'It cannot be switched off', dur: 24,
     stamp: 'COLD SHUTDOWN · SINCE SEPT 2022',
     vo: 'Though ZNPP has ceased to generate electricity, it cannot simply be switched off, continuing to draw on energy, water and labor.',
-    more: [[15.8, "Six shut-down reactors still need cooling, every hour of every day."]],
+    more: [[15.8, "Although the six reactors have been shut down, the need for cooling at every hour of the day remains."]],
     layers: { s2021: 1, hillshade: 0.3, plant: 1, znpp: 0.5, frontline: 0.4, plantModel: 1 },
     cam: [
       at(0, C.occEnd),
@@ -154,7 +154,7 @@ window.STORY = {
     id: 'water', chapter: '04', name: 'Water', dur: 60,
     stamp: '2021',
     vo: "Following the 2023 draining of Kakhovka Reservoir that once replenished the cooling pond, ZNPP has come to rely on newly drilled wells, as the remaining water in the nearby Zaporizhzhia Thermal Power Plant’s canals ran down.",
-    more: [[23.5, "Beyond its old shores, the land is drying, the irrigated fields of the south bank most of all."], [30.2, "And the cooling pond itself has shrunk by about a third since 2023."], [38, "Eleven wells now stand between six reactors and the heat they still produce."], [43.8, "Where exactly they were drilled has never been published."], [50, "In 2025, a dam was built across the intake channel, holding what water remains in a smaller pond."]],
+    more: [[23.5, "Beyond its old shores, the land is drying, the irrigated fields of the south bank most of all."], [30.2, "And the cooling pond itself has shrunk by about a third since 2023."], [38, "Eleven wells now stand between six reactors and the heat they still produce."], [50, "In 2025, a dam was built across the intake channel, holding what water remains in a smaller pond."]],
     layers: { s2021: 1, hillshade: 0.35, plant: 0.6, water: 1, wells: 0, plantModel: 1 },
     imagerySeq: [[0, 's2021'], [12, 's2023'], [27, 's2024'], [35, 'esri'], [48, 's2025']],
     overlaySeq: [[0, null], [15.5, 'ndvi-2021'], [19.5, 'ndvi-2025'], [23.5, 'ndmi-change'], [28, null]],
@@ -209,7 +209,7 @@ window.STORY = {
     id: 'repair', chapter: '06', name: 'Shelling and repair', dur: 64,
     stamp: '',   // driven by the timeline
     vo: "In the meantime, shelling of the plant’s facilities and power lines saw Ukrainian and Russian workers rushing to repair them, exerting pressure on local road networks and labor force.",
-    more: [[20, "Repairs now need local ceasefires, brokered by the IAEA, so crews can work under the guns."], [28.5, "In September 2025, damage one and a half kilometres from the plant cut its last line. It ran on diesel for a month."], [40, "Where the line crosses the river, it crosses the front. Crews repaired it on pylons a hundred metres above the water."], [52, "On the north bank, Ukrainian crews work within sight of Nikopol. By August 2026, the plant had lost off-site power twenty-six times."]],
+    more: [[19, "Repairs now need local ceasefires, brokered by the IAEA, to enable crews to carry them out."], [26.8, "In September 2025, damage about one and a half kilometres from the plant cut its last remaining power line, forcing it to run on diesel for a month."], [40.3, "The line crossing the river inevitably crosses the front. Crews have repaired it on pylons a hundred metres above the drained reservoir."], [52.2, "On the north bank, Ukrainian crews work in the Nikopol area. By August 2026, the plant had lost off-site power twenty-six times."]],
     layers: { s2024: 1, hillshade: 0.35, plant: 1, znpp: 1, particles: 0.9, zones: 1, frontline: 0.5, timeline: 1, log: 1, grid: 0.15, routes: 0.9, plantModel: 1 },
     routeKinds: ['crew-ua', 'crew-ru'],
     flow: 1,
@@ -340,10 +340,14 @@ window.STORY = {
   },
   /* END ─────────────────────────────────────────── */
   {
-    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 32,
+    id: 'end', chapter: '', name: 'Infrastructure: Instruments of Power', dur: 55,
     stamp: 'ZAPORIZHZHIA NPP · NOVEMBER 2026',
+    // closing follows the Center for Spatial Technologies' method (crimea-heritage.spatialtech.info):
+    // the conduct, the law it engages, back to the landscape, then how the work was made
     vo: 'Power lines, roads, reservoirs and canals once carried everyday life. At Zaporizhzhia, each has been turned into an instrument of power: cut, drained, fortified, held hostage. This is slow violence, and it is written into the land itself.',
-    capUntil: 22.5,              // conclusion first; the title and credits follow
+    more: [[21.5, "International humanitarian law sets dams and nuclear power stations apart as works containing dangerous forces. They must not be attacked, and military positions should not be placed near them."],
+           [36.8, "Here, the dam has been destroyed, and the plant's grounds have been fortified. This film documents what remains."]],
+    capUntil: 46,                // conclusion first; the title and credits follow
     endCard: true,
     layers: { s2024: 0.9, hillshade: 0.35, plant: 1, grid: 0.8, gridflow: 0.6, roads: 0.7, routes: 0.8, rail: 0.6,
       reservoir: 0.5, water: 1, fort: 1, frontline: 0.7, ucdp: 0.5 },
@@ -352,14 +356,25 @@ window.STORY = {
       at(0, C.winterEnd),
       { t: 9, c: [34.55, 47.52], z: 10.2, p: 60, b: 330, e: 'io' },
       { t: 20, c: [34.56, 47.52], z: 10.6, p: 62, b: 30, e: 'lin' },
-      { t: 32, c: [32.6, 48.4], z: 6, p: 38, b: 10, e: 'io' },
+      { t: 28, c: [33.98, 47.18], z: 8.1, p: 48, b: 15, e: 'io' },     // dam and plant in one view
+      { t: 44, c: [34.1, 47.25], z: 8.4, p: 52, b: 35, e: 'lin' },
+      { t: 55, c: [32.6, 48.4], z: 6, p: 38, b: 10, e: 'io' },
     ],
     callouts: [
       { t: 11.5, d: 9.5, ll: P.crossing, title: 'Cut', sub: 'Power lines', h: 70, side: 'r' },
       { t: 12.5, d: 8.5, ll: [34.33, 47.45], title: 'Drained', sub: 'Kakhovka reservoir', h: 60, side: 'l' },
       { t: 13.5, d: 7.5, ll: [34.5258, 47.5186], title: 'Fortified', sub: 'Trenches and positions', h: 110, side: 'l' },
       { t: 14.5, d: 6.5, ll: P.znpp, title: 'Held hostage', sub: 'Zaporizhzhia NPP', h: 150 },
+      { t: 26, d: 18, ll: [33.37, 46.778], title: 'Kakhovka dam', sub: 'Destroyed 6 June 2023 · AP I Art. 56', h: 90, side: 'l' },
+      { t: 27, d: 17, ll: P.znpp, title: 'Zaporizhzhia NPP', sub: 'Fortified grounds · AP I Art. 56(5)', h: 110, side: 'r' },
     ],
+    legal: [
+      'Additional Protocol I to the Geneva Conventions (1977), Art. 56 — works and installations containing dangerous forces (dams, nuclear electrical generating stations): not to be made the object of attack; Art. 56(5): parties shall endeavour to avoid locating military objectives in their vicinity',
+      'Additional Protocol I, Art. 54 — objects indispensable to the survival of the civilian population, including drinking-water installations and irrigation works',
+      'IAEA five concrete principles for the Zaporizhzhia NPP (UN Security Council, 30 May 2023) — no attack from or against the plant; no heavy weapons or military personnel based there; off-site power not put at risk',
+      'Rome Statute of the International Criminal Court, Art. 8(2)(b)(iv) — attacks causing widespread, long-term and severe damage to the natural environment',
+    ],
+    method: 'Based on spatial analysis of satellite imagery (Sentinel-2 and VIIRS via Google Earth Engine; Esri; EOX), OpenStreetMap infrastructure, UCDP GED conflict events, IAEA reporting and the McKenzie Intelligence / Greenpeace Ukraine fortification survey, by the GSAPP Advanced V Studio, Fall 2026. Narrative method after the Center for Spatial Technologies, “Russia is Destroying the Crimean Heritage” (2026).',
     sources: '',
   },
   ],

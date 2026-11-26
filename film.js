@@ -503,7 +503,9 @@ function slideHTML(sc, dir) {
   if (sc.titleCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>${sc.vo ? `
     <div id="dateline" class="dateline none"></div><p class="lede">${esc(sc.vo)}</p>` : ''}</div>`;
   if (sc.endCard) return `<div class="${cls}"><div class="hd"><h2>${esc(ST.title)}</h2></div>
-    <p class="lede">${esc(sc.vo)}</p><p class="src">Sources · ${esc(CREDITS)}</p></div>`;
+    <p class="lede">${esc(sc.vo)}</p>${(sc.more || []).map(([, x]) => `<p class="lede more">${esc(x)}</p>`).join('')}
+    ${sc.legal ? `<p class="src law-h">Legal frameworks engaged</p><ul class="law">${sc.legal.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${sc.method ? `<p class="src">Method · ${esc(sc.method)}</p>` : ''}<p class="src">Sources · ${esc(CREDITS)}</p></div>`;
   return `<div class="${cls}"><div class="hd"><h2>${esc(sc.name)}</h2></div>
     <div id="dateline" class="dateline none"></div>
     <p class="lede">${esc(sc.vo)}</p>${(sc.more || []).map(([, x]) => `<p class="lede more">${esc(x)}</p>`).join('')}</div>`;
@@ -571,7 +573,13 @@ let intro = 0, introTimer; // 0 off · 1 title showing · 2 fading out
 function startIntro() {
   intro = 1; document.body.classList.add('intro');
   setTimeout(() => intro === 1 && $('#intro').classList.add('on'), 500);
-  introTimer = setTimeout(endIntro, 4200);
+  introTimer = setTimeout(autoEndIntro, 4200);
+}
+// the title ends by itself only if the browser will let the narration play; otherwise it waits for a click or key
+function autoEndIntro() {
+  if (intro !== 1) return;
+  if (!soundOn) { endIntro(); return; }
+  snd.play().then(() => { snd.pause(); endIntro(); }).catch(soundBlocked);
 }
 function endIntro() {
   if (intro !== 1) return; intro = 2; clearTimeout(introTimer);
@@ -755,7 +763,7 @@ function force(name, v) { const o = L[name]; if (!o) return; o.tgt = v; if (!ble
 
 function loop(now) {
   const dt = lastNow == null ? 0 : Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
-  if (playing && !intro) { // the clock waits while the opening title shows, so narration starts from the top
+  if (playing && !intro && !(needTap && soundOn)) { // the clock waits during the opening title (and for a click if sound is blocked), so narration starts from the top
     const prev = T;
     if (soundOn && !snd.paused && snd.readyState >= 2 && Math.abs(snd.currentTime - (T + dt)) < 0.5) T = snd.currentTime; // the soundtrack is the clock
     else { T += dt; if (soundOn && !snd.paused && Math.abs(snd.currentTime - T) > 0.3 && snd.readyState >= 1) snd.currentTime = T; }
@@ -779,9 +787,13 @@ const ICON = {
 const snd = $('#snd'); let soundOn = !qs.has('mute');
 // load it into memory so it can seek on any server (python's http.server has no byte ranges)
 // (started a couple of seconds after the map loads, at low priority, so the first slide's tiles go first)
-const loadSound = () => fetch(snd.getAttribute('src'), { priority: 'low' }).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn) snd.play().catch(() => {}); }, { once: true }); }).catch(() => {});
-function syncSound() { if (!soundOn || intro) { snd.pause(); return; } try { snd.currentTime = T; } catch (e) {} if (playing) snd.play().catch(() => {}); else snd.pause(); }
-function setSound(v) { soundOn = v; $('#bSnd').innerHTML = ICON[v ? 'snd' : 'mute']; $('#bSnd').setAttribute('aria-label', v ? 'Mute narration' : 'Unmute narration'); $('#bSnd').classList.toggle('off', !v); syncSound(); }
+const loadSound = () => fetch(snd.getAttribute('src'), { priority: 'low' }).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const t = snd.currentTime; snd.src = URL.createObjectURL(b); snd.addEventListener('loadedmetadata', () => { try { snd.currentTime = T || t; } catch (e) {} if (playing && soundOn && !intro) snd.play().catch(soundBlocked); }, { once: true }); }).catch(() => {});
+// browsers refuse sound until the viewer clicks or presses a key: hold the film (and say so) until they do
+let needTap = false;
+function soundBlocked(e) { if (e && e.name === 'NotAllowedError') { needTap = true; document.body.classList.add('needtap'); } }
+function unblock() { if (!needTap) return; needTap = false; document.body.classList.remove('needtap'); syncSound(); }
+function syncSound() { if (!soundOn || intro) { snd.pause(); return; } try { snd.currentTime = T; } catch (e) {} if (playing) snd.play().then(() => { needTap = false; document.body.classList.remove('needtap'); }).catch(soundBlocked); else snd.pause(); }
+function setSound(v) { soundOn = v; if (!v) { needTap = false; document.body.classList.remove('needtap'); } $('#bSnd').innerHTML = ICON[v ? 'snd' : 'mute']; $('#bSnd').setAttribute('aria-label', v ? 'Mute narration' : 'Unmute narration'); $('#bSnd').classList.toggle('off', !v); syncSound(); }
 function setPlay(v) {
   playing = v; if (v) held = false; syncSound();
   const k = v ? 'pause' : held ? 'replay' : 'play';
@@ -820,10 +832,11 @@ $('#bSnd').onclick = () => setSound(!soundOn);
   s.addEventListener('pointermove', e => drag && at(e));
   s.addEventListener('pointerup', () => drag = false);
 })();
-addEventListener('pointerdown', () => { if (intro === 1) endIntro(); else if (playing && soundOn && snd.paused) syncSound(); }); // browsers only allow sound after a click
+addEventListener('pointerdown', () => { if (intro === 1) { needTap = false; document.body.classList.remove('needtap'); endIntro(); } else if (needTap) unblock(); else if (playing && soundOn && snd.paused) syncSound(); }); // browsers only allow sound after a click
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  if (intro) { if (intro === 1 && !['r', 'R', 'f', 'F'].includes(e.key)) { e.preventDefault(); endIntro(); return; } if (intro === 2) return; }
+  if (intro) { if (intro === 1 && !['r', 'R', 'f', 'F'].includes(e.key)) { e.preventDefault(); needTap = false; document.body.classList.remove('needtap'); endIntro(); return; } if (intro === 2) return; }
+  if (needTap) { unblock(); if (e.key === ' ') { e.preventDefault(); return; } }
   const onBtn = e.target.closest && e.target.closest('button,a');
   if (onBtn && (e.key === 'Enter' || e.key === ' ')) return; // focused controls activate normally
   switch (e.key) {

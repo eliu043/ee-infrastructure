@@ -2,7 +2,7 @@
  "engine": "kokoro",
  "voice": "bm_george",
  "rate": 165,
- "total": 438,
+ "total": 462,
  "cues": [
   {
    "id": "kyiv",
@@ -36,13 +36,13 @@
    "id": "lifeline",
    "start": 61.6,
    "end": 71.37,
-   "limit": 72.2,
+   "limit": 71.7,
    "fits": true
   },
   {
    "id": "lifeline.1",
-   "start": 72.5,
-   "end": 82.94,
+   "start": 72.0,
+   "end": 85.13,
    "limit": 85.6,
    "fits": true
   },
@@ -50,175 +50,182 @@
    "id": "occupation",
    "start": 91.6,
    "end": 101.27,
-   "limit": 102.0,
+   "limit": 101.5,
    "fits": true
   },
   {
    "id": "occupation.1",
-   "start": 102.3,
-   "end": 110.92,
-   "limit": 111.6,
+   "start": 101.8,
+   "end": 112.0,
+   "limit": 112.6,
    "fits": true
   },
   {
    "id": "draw",
-   "start": 117.6,
-   "end": 127.04,
-   "limit": 127.5,
+   "start": 118.6,
+   "end": 128.04,
+   "limit": 128.5,
    "fits": true
   },
   {
    "id": "draw.1",
-   "start": 127.8,
-   "end": 132.42,
-   "limit": 135.6,
+   "start": 128.8,
+   "end": 134.83,
+   "limit": 136.6,
    "fits": true
   },
   {
    "id": "water",
-   "start": 141.6,
-   "end": 158.83,
-   "limit": 159.2,
+   "start": 142.6,
+   "end": 159.83,
+   "limit": 160.2,
    "fits": true
   },
   {
    "id": "water.1",
-   "start": 159.5,
-   "end": 165.69,
-   "limit": 165.9,
+   "start": 160.5,
+   "end": 166.69,
+   "limit": 166.9,
    "fits": true
   },
   {
    "id": "water.2",
-   "start": 166.2,
-   "end": 171.36,
-   "limit": 173.7,
+   "start": 167.2,
+   "end": 172.36,
+   "limit": 174.7,
    "fits": true
   },
   {
    "id": "water.3",
-   "start": 174.0,
-   "end": 179.34,
-   "limit": 179.5,
+   "start": 175.0,
+   "end": 180.34,
+   "limit": 186.7,
    "fits": true
   },
   {
    "id": "water.4",
-   "start": 179.8,
-   "end": 183.27,
-   "limit": 185.7,
-   "fits": true
-  },
-  {
-   "id": "water.5",
-   "start": 186.0,
-   "end": 193.25,
-   "limit": 195.6,
+   "start": 187.0,
+   "end": 194.25,
+   "limit": 196.6,
    "fits": true
   },
   {
    "id": "notyet",
-   "start": 201.6,
-   "end": 207.37,
-   "limit": 210.6,
+   "start": 202.6,
+   "end": 208.37,
+   "limit": 211.6,
    "fits": true
   },
   {
    "id": "repair",
-   "start": 216.6,
-   "end": 229.02,
+   "start": 217.6,
+   "end": 230.02,
    "limit": 230.7,
    "fits": true
   },
   {
    "id": "repair.1",
    "start": 231.0,
-   "end": 237.29,
-   "limit": 239.2,
+   "end": 237.31,
+   "limit": 238.5,
    "fits": true
   },
   {
    "id": "repair.2",
-   "start": 239.5,
-   "end": 249.44,
-   "limit": 250.7,
+   "start": 238.8,
+   "end": 249.57,
+   "limit": 252.0,
    "fits": true
   },
   {
    "id": "repair.3",
-   "start": 251.0,
-   "end": 260.14,
-   "limit": 262.7,
+   "start": 252.3,
+   "end": 262.71,
+   "limit": 263.9,
    "fits": true
   },
   {
    "id": "repair.4",
-   "start": 263.0,
-   "end": 273.66,
-   "limit": 274.6,
+   "start": 264.2,
+   "end": 274.78,
+   "limit": 275.6,
    "fits": true
   },
   {
    "id": "dependency",
-   "start": 280.6,
-   "end": 292.74,
-   "limit": 293.7,
+   "start": 281.6,
+   "end": 293.74,
+   "limit": 294.7,
    "fits": true
   },
   {
    "id": "dependency.1",
-   "start": 294.0,
-   "end": 301.2,
-   "limit": 306.6,
+   "start": 295.0,
+   "end": 302.2,
+   "limit": 307.6,
    "fits": true
   },
   {
    "id": "supply",
-   "start": 312.6,
-   "end": 330.92,
-   "limit": 333.2,
+   "start": 313.6,
+   "end": 331.92,
+   "limit": 334.2,
    "fits": true
   },
   {
    "id": "supply.1",
-   "start": 333.5,
-   "end": 343.99,
-   "limit": 346.6,
+   "start": 334.5,
+   "end": 344.99,
+   "limit": 347.6,
    "fits": true
   },
   {
    "id": "frontier",
-   "start": 352.6,
-   "end": 365.62,
-   "limit": 367.2,
+   "start": 353.6,
+   "end": 366.62,
+   "limit": 368.2,
    "fits": true
   },
   {
    "id": "frontier.1",
-   "start": 367.5,
-   "end": 374.38,
-   "limit": 374.7,
+   "start": 368.5,
+   "end": 375.38,
+   "limit": 375.7,
    "fits": true
   },
   {
    "id": "frontier.2",
-   "start": 375.0,
-   "end": 377.57,
-   "limit": 380.6,
+   "start": 376.0,
+   "end": 378.57,
+   "limit": 381.6,
    "fits": true
   },
   {
    "id": "winter",
-   "start": 386.6,
-   "end": 399.97,
-   "limit": 405.6,
+   "start": 387.6,
+   "end": 400.97,
+   "limit": 406.6,
    "fits": true
   },
   {
    "id": "end",
-   "start": 407.6,
-   "end": 425.96,
-   "limit": 428.1,
+   "start": 408.6,
+   "end": 426.96,
+   "limit": 428.2,
+   "fits": true
+  },
+  {
+   "id": "end.1",
+   "start": 428.5,
+   "end": 442.66,
+   "limit": 443.5,
+   "fits": true
+  },
+  {
+   "id": "end.2",
+   "start": 443.8,
+   "end": 452.03,
+   "limit": 452.6,
    "fits": true
   }
  ]
