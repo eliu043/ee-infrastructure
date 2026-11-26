@@ -140,8 +140,25 @@ function znppPaint() {
 }
 function domOp(sel) { const el = $(sel); return v => { el.style.opacity = v; }; }
 
+/* Fingerprinting protection (Safari's Advanced Fingerprinting Protection, Brave) adds noise to canvas reads. The DEM
+   stores height in pixel colour (1 step of red = 256 m), so that noise turns into needles hundreds of metres tall.
+   Test once: write a varied pattern to a canvas and read it back. If it doesn't come back exactly, run flat. */
+const CANVAS_NOISY = (() => {
+  try {
+    const S = 64, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const cx = cv.getContext('2d', { willReadFrequently: true }), im = cx.createImageData(S, S), d = im.data;
+    for (let i = 0; i < S * S; i++) { d[i * 4] = (i * 37) & 255; d[i * 4 + 1] = (i * 101 + 13) & 255; d[i * 4 + 2] = (i * 7 + i % 5 * 50) & 255; d[i * 4 + 3] = 255; }
+    cx.putImageData(im, 0, 0);
+    const r = cx.getImageData(0, 0, S, S).data;
+    for (let i = 0; i < r.length; i++) if (r[i] !== d[i]) return true;
+    return false;
+  } catch (e) { return true; }
+})() || qs.has('flat');
+if (CANVAS_NOISY) console.warn('3D terrain off: canvas reads are altered (fingerprinting protection), which would corrupt the elevation data');
+
 function buildLayers() {
-  map.setTerrain({ source: 'dem', exaggeration: ST.exaggeration });
+  if (!CANVAS_NOISY) map.setTerrain({ source: 'dem', exaggeration: ST.exaggeration });
+  else { $('#flatnote').classList.add('on'); setTimeout(() => $('#flatnote').classList.remove('on'), 12000); }
   try { map.setSky({ 'sky-color': '#0a0e13', 'horizon-color': '#1a232c', 'fog-color': '#07090a', 'sky-horizon-blend': 0.7, 'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.6, 'atmosphere-blend': 0 }); } catch (e) {}
 
   map.addSource('reservoir', { type: 'geojson', data: D.reservoir });
@@ -226,7 +243,7 @@ function buildLayers() {
   if (D.landchange) ['ndvi-2021', 'ndvi-2025', 'ndvi-change', 'ndmi-change'].forEach(k =>   // above imagery, below vectors
     map.addLayer({ id: 'lc-' + k, type: 'raster', source: 'lc-' + k, paint: { 'raster-opacity': 0, 'raster-fade-duration': 0 } }, 'res-fill'));
   reg('s2021', pp('s2021', 'raster-opacity')); reg('s2024', pp('s2024', 'raster-opacity')); reg('s2023', pp('s2023', 'raster-opacity')); reg('s2025', pp('s2025', 'raster-opacity')); reg('esri', pp('esri', 'raster-opacity'));
-  reg('lights', pp('lights', 'raster-opacity')); if (window.STORY.nightLights) reg('eeLights', pp('eeLights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', pp('hillshade', 'hillshade-exaggeration'));
+  reg('lights', pp('lights', 'raster-opacity')); if (window.STORY.nightLights) reg('eeLights', pp('eeLights', 'raster-opacity')); reg('dnb20260124', pp('dnb20260124', 'raster-opacity')); reg('hillshade', CANVAS_NOISY ? () => {} : pp('hillshade', 'hillshade-exaggeration'));
   reg('reservoir', pp('res-fill', 'fill-opacity', 0.35));
   reg('frontline', pp('front-fill', 'fill-opacity', 0.12), pp('front-line', 'line-opacity', 0.75));
   reg('canals', pp('canals', 'line-opacity'));
