@@ -2,7 +2,7 @@
  "engine": "kokoro",
  "voice": "bm_george",
  "rate": 165,
- "total": 462,
+ "total": 467,
  "cues": [
   {
    "id": "kyiv",
@@ -224,8 +224,8 @@
   {
    "id": "end.2",
    "start": 443.8,
-   "end": 452.03,
-   "limit": 452.6,
+   "end": 455.95,
+   "limit": 457.6,
    "fits": true
   }
  ]
